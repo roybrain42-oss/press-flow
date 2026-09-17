@@ -256,15 +256,17 @@ class DatabaseEngine {
     this.persist();
     this.isLoaded = true;
 
-    // Connect to Cloud Firestore & sync records in background
-    setTimeout(async () => {
-      try {
-        initServerFirestore();
-        await this.syncAllToFirestore();
-      } catch (err) {
-        console.warn('[DB] Initial Firestore sync notice:', err);
-      }
-    }, 1500);
+    if (!isServerless) {
+      // Connect to Cloud Firestore & sync records in background (for long-lived servers)
+      setTimeout(async () => {
+        try {
+          initServerFirestore();
+          await this.syncAllToFirestore();
+        } catch (err) {
+          console.warn('[DB] Initial Firestore sync notice:', err);
+        }
+      }, 1500);
+    }
   }
 
   private persist() {

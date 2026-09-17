@@ -53,8 +53,10 @@ async function handleResponse<T>(res: Response): Promise<T> {
     } else {
       try {
         const text = await res.text();
-        // Detect Vercel edge 404 NOT_FOUND response
-        if (text && (text.includes('NOT_FOUND') || text.includes('The page could not be found'))) {
+        // Detect Vercel / serverless edge errors
+        if (text && text.includes('FUNCTION_INVOCATION_FAILED')) {
+          errorMsg = 'Serverless function execution failed (FUNCTION_INVOCATION_FAILED). Please deploy the latest pre-bundled api/index.js or set VITE_API_URL.';
+        } else if (text && (text.includes('NOT_FOUND') || text.includes('The page could not be found'))) {
           errorMsg = 'API route not reachable (Vercel NOT_FOUND 404). Please ensure the latest vercel.json and /api directory are deployed, or set VITE_API_URL in your environment.';
         } else if (text && !text.includes('<!DOCTYPE') && !text.includes('<html')) {
           errorMsg = text.slice(0, 180);

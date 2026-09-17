@@ -380,6 +380,60 @@
       "id": "tnt-1789644623673-b2ehai",
       "created_at": "2026-09-17T11:30:23.673Z",
       "updated_at": "2026-09-17T11:30:23.673Z"
+    },
+    {
+      "slug": "serverless-press-test",
+      "name": "Serverless Press Test",
+      "owner_name": "Serverless Kofi",
+      "email": "serverless.kofi@example.com",
+      "phone": "+233201239999",
+      "location": "Ghana",
+      "address": "",
+      "description": "Digital and offset printing services",
+      "logo_url": "https://images.unsplash.com/photo-1562654501-a0ccc0fc3fb1?w=150&auto=format&fit=crop&q=80",
+      "status": "active",
+      "plan_id": "free",
+      "settings": {
+        "currency": "GHS",
+        "currency_symbol": "GH₵",
+        "operating_hours": "Monday – Saturday: 8:00 AM – 7:00 PM",
+        "pay_at_shop_enabled": true,
+        "online_payment_enabled": false,
+        "payment_provider": "paystack",
+        "document_retention_days": 14,
+        "max_file_size_mb": 25,
+        "allow_notes": true
+      },
+      "id": "tnt-1789645119900-nw9m0w",
+      "created_at": "2026-09-17T11:38:39.900Z",
+      "updated_at": "2026-09-17T11:38:39.900Z"
+    },
+    {
+      "slug": "verifiable-press-2026",
+      "name": "Verifiable Press 2026",
+      "owner_name": "Verifiable User",
+      "email": "verifiable.user@example.com",
+      "phone": "+233200000000",
+      "location": "Ghana",
+      "address": "",
+      "description": "Digital and offset printing services",
+      "logo_url": "https://images.unsplash.com/photo-1562654501-a0ccc0fc3fb1?w=150&auto=format&fit=crop&q=80",
+      "status": "active",
+      "plan_id": "free",
+      "settings": {
+        "currency": "GHS",
+        "currency_symbol": "GH₵",
+        "operating_hours": "Monday – Saturday: 8:00 AM – 7:00 PM",
+        "pay_at_shop_enabled": true,
+        "online_payment_enabled": false,
+        "payment_provider": "paystack",
+        "document_retention_days": 14,
+        "max_file_size_mb": 25,
+        "allow_notes": true
+      },
+      "id": "tnt-1789645276507-2pnof2",
+      "created_at": "2026-09-17T11:41:16.507Z",
+      "updated_at": "2026-09-17T11:41:16.507Z"
     }
   ],
   "users": [
@@ -574,6 +628,30 @@
       "id": "usr-1789644623781-wkn8ge",
       "created_at": "2026-09-17T11:30:23.781Z",
       "updated_at": "2026-09-17T11:30:23.781Z"
+    },
+    {
+      "tenant_id": "tnt-1789645119900-nw9m0w",
+      "role": "owner",
+      "name": "Serverless Kofi",
+      "email": "serverless.kofi@example.com",
+      "password_hash": "$2b$10$VFBS8i/sd/NWkQISYB2SHOaqA.nqHtDpk6SElDIw.Mllj9n4.iZx2",
+      "phone": "+233201239999",
+      "status": "active",
+      "id": "usr-1789645120040-zgjxyu",
+      "created_at": "2026-09-17T11:38:40.040Z",
+      "updated_at": "2026-09-17T11:38:40.040Z"
+    },
+    {
+      "tenant_id": "tnt-1789645276507-2pnof2",
+      "role": "owner",
+      "name": "Verifiable User",
+      "email": "verifiable.user@example.com",
+      "password_hash": "$2b$10$BZfmyTFgbSalnDLPoUq1FOEynKc.gBXCoxnCHzSYjmiMhEsqISj.O",
+      "phone": "+233200000000",
+      "status": "active",
+      "id": "usr-1789645276660-rjhdiw",
+      "created_at": "2026-09-17T11:41:16.660Z",
+      "updated_at": "2026-09-17T11:41:16.660Z"
     }
   ],
   "services": [
@@ -1071,6 +1149,72 @@
       "is_active": true,
       "id": "srv-1789644623784-nhsydo",
       "created_at": "2026-09-17T11:30:23.784Z"
+    },
+    {
+      "tenant_id": "tnt-1789645119900-nw9m0w",
+      "name": "A4 Black & White Printing",
+      "category": "printing",
+      "unit_type": "per_page",
+      "price": 0.5,
+      "description": "Standard monochrome 80gsm printing",
+      "is_active": true,
+      "id": "srv-1789645120042-t5cnzk",
+      "created_at": "2026-09-17T11:38:40.042Z"
+    },
+    {
+      "tenant_id": "tnt-1789645119900-nw9m0w",
+      "name": "A4 Colour Printing",
+      "category": "printing",
+      "unit_type": "per_page",
+      "price": 2,
+      "description": "Full color digital laser print",
+      "is_active": true,
+      "id": "srv-1789645120042-1on0vs",
+      "created_at": "2026-09-17T11:38:40.042Z"
+    },
+    {
+      "tenant_id": "tnt-1789645119900-nw9m0w",
+      "name": "Plastic Comb Binding",
+      "category": "finishing",
+      "unit_type": "per_document",
+      "price": 8,
+      "description": "Comb binding with clear cover",
+      "is_active": true,
+      "id": "srv-1789645120043-rnwoqw",
+      "created_at": "2026-09-17T11:38:40.043Z"
+    },
+    {
+      "tenant_id": "tnt-1789645276507-2pnof2",
+      "name": "A4 Black & White Printing",
+      "category": "printing",
+      "unit_type": "per_page",
+      "price": 0.5,
+      "description": "Standard monochrome 80gsm printing",
+      "is_active": true,
+      "id": "srv-1789645276661-9jlkri",
+      "created_at": "2026-09-17T11:41:16.661Z"
+    },
+    {
+      "tenant_id": "tnt-1789645276507-2pnof2",
+      "name": "A4 Colour Printing",
+      "category": "printing",
+      "unit_type": "per_page",
+      "price": 2,
+      "description": "Full color digital laser print",
+      "is_active": true,
+      "id": "srv-1789645276662-220pwp",
+      "created_at": "2026-09-17T11:41:16.662Z"
+    },
+    {
+      "tenant_id": "tnt-1789645276507-2pnof2",
+      "name": "Plastic Comb Binding",
+      "category": "finishing",
+      "unit_type": "per_document",
+      "price": 8,
+      "description": "Comb binding with clear cover",
+      "is_active": true,
+      "id": "srv-1789645276663-ftz5zz",
+      "created_at": "2026-09-17T11:41:16.663Z"
     }
   ],
   "print_jobs": [
@@ -1477,6 +1621,38 @@
     }
   ],
   "audit_logs": [
+    {
+      "tenant_id": "tnt-1789645276507-2pnof2",
+      "user_id": "usr-1789645276660-rjhdiw",
+      "user_email": "verifiable.user@example.com",
+      "role": "owner",
+      "action": "PRINTING_PRESS_REGISTERED",
+      "resource_type": "tenant",
+      "resource_id": "tnt-1789645276507-2pnof2",
+      "details": {
+        "business_name": "Verifiable Press 2026",
+        "slug": "verifiable-press-2026"
+      },
+      "ip": "::ffff:127.0.0.1",
+      "id": "log-1789645276664-bt3ymq",
+      "created_at": "2026-09-17T11:41:16.664Z"
+    },
+    {
+      "tenant_id": "tnt-1789645119900-nw9m0w",
+      "user_id": "usr-1789645120040-zgjxyu",
+      "user_email": "serverless.kofi@example.com",
+      "role": "owner",
+      "action": "PRINTING_PRESS_REGISTERED",
+      "resource_type": "tenant",
+      "resource_id": "tnt-1789645119900-nw9m0w",
+      "details": {
+        "business_name": "Serverless Press Test",
+        "slug": "serverless-press-test"
+      },
+      "ip": "::ffff:127.0.0.1",
+      "id": "log-1789645120044-o2wbui",
+      "created_at": "2026-09-17T11:38:40.044Z"
+    },
     {
       "tenant_id": "tnt-1789644623673-b2ehai",
       "user_id": "usr-1789644623781-wkn8ge",
