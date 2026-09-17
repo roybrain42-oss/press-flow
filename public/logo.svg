@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 650" width="600" height="650">
+  <defs>
+    <filter id="logoShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#0284c7" flood-opacity="0.22"/>
+    </filter>
+    <linearGradient id="pGradFull" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284c7" />
+      <stop offset="50%" stop-color="#2563eb" />
+      <stop offset="100%" stop-color="#1e3a8a" />
+    </linearGradient>
+    <linearGradient id="leafMagentaFull" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fb7185" />
+      <stop offset="100%" stop-color="#e11d48" />
+    </linearGradient>
+    <linearGradient id="leafAmberFull" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fcd34d" />
+      <stop offset="100%" stop-color="#f59e0b" />
+    </linearGradient>
+    <linearGradient id="leafCyanFull" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#0284c7" />
+    </linearGradient>
+  </defs>
+
+  <!-- Centered Logo Mark -->
+  <g transform="translate(60, 20) scale(0.9)" filter="url(#logoShadow)">
+    <!-- Sheet 1: Magenta -->
+    <path d="M 210 200 C 180 200 150 215 136 230 C 146 255 180 270 216 270 C 235 250 235 220 210 200 Z" fill="url(#leafMagentaFull)"/>
+
+    <!-- Sheet 2: Gold -->
+    <path d="M 200 235 C 160 235 125 255 110 278 C 122 305 162 320 205 315 C 220 290 220 260 200 235 Z" fill="url(#leafAmberFull)"/>
+
+    <!-- Sheet 3: Cyan -->
+    <path d="M 195 285 C 148 290 115 320 105 348 C 122 375 168 385 212 372 C 222 342 215 310 195 285 Z" fill="url(#leafCyanFull)"/>
+
+    <!-- Main Stylized Letter P -->
+    <path d="M 200 80 L 330 80 C 395 80 440 125 440 190 C 440 255 395 300 330 300 L 265 300 L 255 390 C 252 415 240 435 220 442 C 200 448 180 436 175 410 L 175 105 C 175 91 186 80 200 80 Z" fill="url(#pGradFull)"/>
+
+    <!-- White Document Inside P Loop -->
+    <g transform="translate(230, 115)">
+      <path d="M 12 0 L 80 0 L 115 35 L 115 125 C 115 132 109 138 102 138 L 12 138 C 5 138 0 132 0 125 L 0 12 C 0 5 5 0 12 0 Z" fill="#ffffff"/>
+      <path d="M 80 0 L 80 35 L 115 35 Z" fill="#cbd5e1"/>
+      <rect x="20" y="45" width="55" height="10" rx="5" fill="#0284c7"/>
+      <rect x="20" y="65" width="75" height="8" rx="4" fill="#3b82f6"/>
+      <rect x="20" y="83" width="60" height="8" rx="4" fill="#38bdf8"/>
+    </g>
+  </g>
+
+  <!-- Typography -->
+  <text x="300" y="520" text-anchor="middle" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-weight="900" font-size="74" letter-spacing="-1.5">
+    <tspan fill="#0f172a">Print</tspan><tspan fill="#2563eb">Flow</tspan>
+  </text>
+
+  <!-- Subtitle: Scan • Upload • Print -->
+  <g transform="translate(300, 580)" font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" font-weight="700" font-size="22" letter-spacing="3" fill="#334155" text-anchor="middle">
+    <text x="-160">SCAN</text>
+    <circle cx="-90" cy="-7" r="4.5" fill="#2563eb" />
+    <text x="0">UPLOAD</text>
+    <circle cx="90" cy="-7" r="4.5" fill="#2563eb" />
+    <text x="160">PRINT</text>
+  </g>
+</svg>

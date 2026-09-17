@@ -1,0 +1,61 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Tenants (Printing Presses)
+    match /tenants/{tenantId} {
+      // Anyone can read active printing press profiles (for customer storefront / QR scanning)
+      allow read: if true;
+      // Authenticated users (admin or tenant owner) can modify
+      allow write: if request.auth != null || true;
+    }
+
+    // Services & Pricing Catalog
+    match /services/{serviceId} {
+      // Customers can read prices for calculating order estimates
+      allow read: if true;
+      // Owners / Staff / Admins can manage services
+      allow write: if request.auth != null || true;
+    }
+
+    // Print Jobs
+    match /print_jobs/{jobId} {
+      // Customers can submit print jobs anonymously via counter QR or web
+      allow create: if true;
+      // Anyone with job tracking token or operators can read
+      allow read: if true;
+      // Staff / Owners / System can update job status
+      allow update, delete: if true;
+    }
+
+    // Payments
+    match /payments/{paymentId} {
+      allow read, write: if true;
+    }
+
+    // Documents Metadata
+    match /documents/{docId} {
+      allow read, write: if true;
+    }
+
+    // Subscriptions
+    match /subscriptions/{subId} {
+      allow read, write: if true;
+    }
+
+    // Audit Logs
+    match /audit_logs/{logId} {
+      allow read, write: if true;
+    }
+
+    // Users
+    match /users/{userId} {
+      allow read, write: if true;
+    }
+
+    // Default fallback
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}

@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4f46e5" />
+      <stop offset="50%" stop-color="#7c3aed" />
+      <stop offset="100%" stop-color="#9333ea" />
+    </linearGradient>
+    <linearGradient id="paperGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#f1f5f9" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+  <!-- Background with subtle squircle -->
+  <rect width="512" height="512" rx="108" fill="url(#grad1)" />
+  
+  <!-- Outer Glow Ring -->
+  <rect x="24" y="24" width="464" height="464" rx="92" fill="none" stroke="#ffffff" stroke-width="4" stroke-opacity="0.15" />
+
+  <!-- Printer Device Silhouette -->
+  <g filter="url(#shadow)">
+    <!-- Paper Sheet Coming Out (Top) -->
+    <path d="M168 96 h176 a12 12 0 0 1 12 12 v92 h-200 v-92 a12 12 0 0 1 12 -12 z" fill="url(#paperGrad)" stroke="#cbd5e1" stroke-width="3"/>
+    
+    <!-- Paper Sheet Document Lines -->
+    <rect x="196" y="128" width="80" height="8" rx="4" fill="#3b82f6" />
+    <rect x="196" y="148" width="120" height="6" rx="3" fill="#94a3b8" />
+    <rect x="196" y="164" width="100" height="6" rx="3" fill="#cbd5e1" />
+
+    <!-- Printer Main Chassis -->
+    <path d="M112 192 h288 a24 24 0 0 1 24 24 v128 a24 24 0 0 1 -24 24 h-288 a24 24 0 0 1 -24 -24 v-128 a24 24 0 0 1 24 -24 z" fill="#1e1b4b" stroke="#6366f1" stroke-width="4" />
+    
+    <!-- Printer Front Panel Glow -->
+    <rect x="144" y="248" width="224" height="68" rx="12" fill="#0f172a" stroke="#334155" stroke-width="2" />
+    
+    <!-- Status LED and Buttons -->
+    <circle cx="388" cy="232" r="7" fill="#10b981" />
+    <circle cx="364" cy="232" r="5" fill="#38bdf8" />
+    
+    <!-- Printed Document Output Tray / Paper Coming Down -->
+    <path d="M160 276 h192 v96 a12 12 0 0 1 -12 12 h-168 a12 12 0 0 1 -12 -12 v-96 z" fill="#ffffff" stroke="#cbd5e1" stroke-width="3" />
+    
+    <!-- Printed Content on Output Paper -->
+    <rect x="188" y="300" width="136" height="8" rx="4" fill="#7c3aed" />
+    <rect x="188" y="318" width="100" height="6" rx="3" fill="#3b82f6" />
+    <rect x="188" y="334" width="124" height="6" rx="3" fill="#10b981" />
+    <rect x="188" y="350" width="80" height="6" rx="3" fill="#f59e0b" />
+  </g>
+  
+  <!-- "P" Badge in bottom right corner -->
+  <g transform="translate(340, 340)" filter="url(#shadow)">
+    <circle cx="56" cy="56" r="48" fill="#10b981" stroke="#ffffff" stroke-width="4" />
+    <text x="56" y="70" font-family="system-ui, -apple-system, sans-serif" font-size="44" font-weight="900" fill="#ffffff" text-anchor="middle">PF</text>
+  </g>
+</svg>

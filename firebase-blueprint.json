@@ -1,0 +1,99 @@
+{
+  "entities": {
+    "tenants": {
+      "title": "Tenants",
+      "description": "Printing press businesses, profiles, and settings",
+      "fields": {
+        "slug": { "type": "string" },
+        "name": { "type": "string" },
+        "owner_name": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "location": { "type": "string" },
+        "address": { "type": "string" },
+        "status": { "type": "string" },
+        "plan_id": { "type": "string" },
+        "created_at": { "type": "string" },
+        "updated_at": { "type": "string" }
+      }
+    },
+    "users": {
+      "title": "Users",
+      "description": "Platform accounts: super admins, shop owners, and counter staff",
+      "fields": {
+        "tenant_id": { "type": "string" },
+        "role": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "status": { "type": "string" },
+        "created_at": { "type": "string" }
+      }
+    },
+    "services": {
+      "title": "Services",
+      "description": "Printing, finishing, binding pricing catalog for each shop",
+      "fields": {
+        "tenant_id": { "type": "string" },
+        "name": { "type": "string" },
+        "category": { "type": "string" },
+        "unit_type": { "type": "string" },
+        "price": { "type": "number" },
+        "is_active": { "type": "boolean" },
+        "created_at": { "type": "string" }
+      }
+    },
+    "print_jobs": {
+      "title": "Print Jobs",
+      "description": "Customer print orders, options, prices, and status",
+      "fields": {
+        "job_number": { "type": "string" },
+        "tenant_id": { "type": "string" },
+        "customer_name": { "type": "string" },
+        "customer_phone": { "type": "string" },
+        "tracking_token": { "type": "string" },
+        "document_name": { "type": "string" },
+        "estimated_total": { "type": "number" },
+        "payment_status": { "type": "string" },
+        "job_status": { "type": "string" },
+        "created_at": { "type": "string" }
+      }
+    },
+    "payments": {
+      "title": "Payments",
+      "description": "Payment transactions for print jobs",
+      "fields": {
+        "tenant_id": { "type": "string" },
+        "job_id": { "type": "string" },
+        "reference": { "type": "string" },
+        "amount": { "type": "number" },
+        "currency": { "type": "string" },
+        "status": { "type": "string" },
+        "provider": { "type": "string" },
+        "created_at": { "type": "string" }
+      }
+    },
+    "subscriptions": {
+      "title": "Subscriptions",
+      "description": "Shop SaaS tier plans and quotas",
+      "fields": {
+        "tenant_id": { "type": "string" },
+        "plan_name": { "type": "string" },
+        "monthly_price": { "type": "number" },
+        "status": { "type": "string" },
+        "max_jobs_per_month": { "type": "number" },
+        "current_month_jobs": { "type": "number" }
+      }
+    },
+    "audit_logs": {
+      "title": "Audit Logs",
+      "description": "System-wide audit trail for compliance",
+      "fields": {
+        "tenant_id": { "type": "string" },
+        "action": { "type": "string" },
+        "resource_type": { "type": "string" },
+        "resource_id": { "type": "string" },
+        "created_at": { "type": "string" }
+      }
+    }
+  }
+}

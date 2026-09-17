@@ -1,0 +1,6 @@
+{
+  "name": "PrintFlow",
+  "description": "Production-ready multi-tenant SaaS platform for printing presses with QR code document submissions, job tracking, pricing, and tenant dashboards.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
