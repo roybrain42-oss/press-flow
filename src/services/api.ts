@@ -10,10 +10,24 @@ import {
   PaymentStatus,
 } from '../types';
 
-const customApiUrl = typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL
-  ? String(import.meta.env.VITE_API_URL).replace(/\/$/, '')
-  : '';
-const API_BASE = customApiUrl ? `${customApiUrl}/api` : '/api';
+export function getApiBaseUrl(): string {
+  // 1. Check runtime localStorage override (allows connecting a static frontend on Vercel to a deployed backend)
+  const storedUrl = typeof window !== 'undefined' ? localStorage.getItem('printflow_api_url') : null;
+  if (storedUrl) {
+    return `${storedUrl.replace(/\/$/, '')}/api`;
+  }
+  // 2. Check build-time env var
+  const envUrl = typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL
+    ? String(import.meta.env.VITE_API_URL).replace(/\/$/, '')
+    : '';
+  if (envUrl) {
+    return `${envUrl}/api`;
+  }
+  // 3. Default to relative /api
+  return '/api';
+}
+
+const API_BASE = getApiBaseUrl();
 
 function getAuthHeaders(): HeadersInit {
   const token = localStorage.getItem('printflow_token');
@@ -39,8 +53,10 @@ async function handleResponse<T>(res: Response): Promise<T> {
     } else {
       try {
         const text = await res.text();
-        // If response is an HTML page (like 502/404 from proxy or static host), don't dump raw HTML tags
-        if (text && !text.includes('<!DOCTYPE') && !text.includes('<html')) {
+        // Detect Vercel edge 404 NOT_FOUND response
+        if (text && (text.includes('NOT_FOUND') || text.includes('The page could not be found'))) {
+          errorMsg = 'API route not reachable (Vercel NOT_FOUND 404). Please ensure the latest vercel.json and /api directory are deployed, or set VITE_API_URL in your environment.';
+        } else if (text && !text.includes('<!DOCTYPE') && !text.includes('<html')) {
           errorMsg = text.slice(0, 180);
         }
       } catch {

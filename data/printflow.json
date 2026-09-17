@@ -326,6 +326,60 @@
       "id": "tnt-1789642260436-7mclu4",
       "created_at": "2026-09-17T10:51:00.436Z",
       "updated_at": "2026-09-17T10:51:00.436Z"
+    },
+    {
+      "slug": "global-vercel-print",
+      "name": "Global Vercel Print",
+      "owner_name": "Kofi Vercel",
+      "email": "kofi.vercel@example.com",
+      "phone": "+233201112233",
+      "location": "Ghana",
+      "address": "",
+      "description": "Digital and offset printing services",
+      "logo_url": "https://images.unsplash.com/photo-1562654501-a0ccc0fc3fb1?w=150&auto=format&fit=crop&q=80",
+      "status": "active",
+      "plan_id": "free",
+      "settings": {
+        "currency": "GHS",
+        "currency_symbol": "GH₵",
+        "operating_hours": "Monday – Saturday: 8:00 AM – 7:00 PM",
+        "pay_at_shop_enabled": true,
+        "online_payment_enabled": false,
+        "payment_provider": "paystack",
+        "document_retention_days": 14,
+        "max_file_size_mb": 25,
+        "allow_notes": true
+      },
+      "id": "tnt-1789644621473-lxd4xh",
+      "created_at": "2026-09-17T11:30:21.473Z",
+      "updated_at": "2026-09-17T11:30:21.473Z"
+    },
+    {
+      "slug": "fallback-press",
+      "name": "Fallback Press",
+      "owner_name": "Ama Fallback",
+      "email": "ama.fallback@example.com",
+      "phone": "+233209998877",
+      "location": "Ghana",
+      "address": "",
+      "description": "Digital and offset printing services",
+      "logo_url": "https://images.unsplash.com/photo-1562654501-a0ccc0fc3fb1?w=150&auto=format&fit=crop&q=80",
+      "status": "active",
+      "plan_id": "free",
+      "settings": {
+        "currency": "GHS",
+        "currency_symbol": "GH₵",
+        "operating_hours": "Monday – Saturday: 8:00 AM – 7:00 PM",
+        "pay_at_shop_enabled": true,
+        "online_payment_enabled": false,
+        "payment_provider": "paystack",
+        "document_retention_days": 14,
+        "max_file_size_mb": 25,
+        "allow_notes": true
+      },
+      "id": "tnt-1789644623673-b2ehai",
+      "created_at": "2026-09-17T11:30:23.673Z",
+      "updated_at": "2026-09-17T11:30:23.673Z"
     }
   ],
   "users": [
@@ -496,6 +550,30 @@
       "id": "usr-1789642260563-itqc00",
       "created_at": "2026-09-17T10:51:00.563Z",
       "updated_at": "2026-09-17T10:51:00.563Z"
+    },
+    {
+      "tenant_id": "tnt-1789644621473-lxd4xh",
+      "role": "owner",
+      "name": "Kofi Vercel",
+      "email": "kofi.vercel@example.com",
+      "password_hash": "$2b$10$AjBgwiFLTW3RhjPp1RvIdeL1JZIqdLuPiOS6Sh1Fkh7GAD6rO5GFm",
+      "phone": "+233201112233",
+      "status": "active",
+      "id": "usr-1789644621618-5a3r5o",
+      "created_at": "2026-09-17T11:30:21.618Z",
+      "updated_at": "2026-09-17T11:30:21.618Z"
+    },
+    {
+      "tenant_id": "tnt-1789644623673-b2ehai",
+      "role": "owner",
+      "name": "Ama Fallback",
+      "email": "ama.fallback@example.com",
+      "password_hash": "$2b$10$L0yftvDO0xhVoBlZ/jsT5.lTz0057iMooPIG4VFfmL6padk80k0dG",
+      "phone": "+233209998877",
+      "status": "active",
+      "id": "usr-1789644623781-wkn8ge",
+      "created_at": "2026-09-17T11:30:23.781Z",
+      "updated_at": "2026-09-17T11:30:23.781Z"
     }
   ],
   "services": [
@@ -927,6 +1005,72 @@
       "is_active": true,
       "id": "srv-1789642260566-7qouv4",
       "created_at": "2026-09-17T10:51:00.566Z"
+    },
+    {
+      "tenant_id": "tnt-1789644621473-lxd4xh",
+      "name": "A4 Black & White Printing",
+      "category": "printing",
+      "unit_type": "per_page",
+      "price": 0.5,
+      "description": "Standard monochrome 80gsm printing",
+      "is_active": true,
+      "id": "srv-1789644621619-0xh9hd",
+      "created_at": "2026-09-17T11:30:21.619Z"
+    },
+    {
+      "tenant_id": "tnt-1789644621473-lxd4xh",
+      "name": "A4 Colour Printing",
+      "category": "printing",
+      "unit_type": "per_page",
+      "price": 2,
+      "description": "Full color digital laser print",
+      "is_active": true,
+      "id": "srv-1789644621620-4bjyfc",
+      "created_at": "2026-09-17T11:30:21.620Z"
+    },
+    {
+      "tenant_id": "tnt-1789644621473-lxd4xh",
+      "name": "Plastic Comb Binding",
+      "category": "finishing",
+      "unit_type": "per_document",
+      "price": 8,
+      "description": "Comb binding with clear cover",
+      "is_active": true,
+      "id": "srv-1789644621621-o8esro",
+      "created_at": "2026-09-17T11:30:21.621Z"
+    },
+    {
+      "tenant_id": "tnt-1789644623673-b2ehai",
+      "name": "A4 Black & White Printing",
+      "category": "printing",
+      "unit_type": "per_page",
+      "price": 0.5,
+      "description": "Standard monochrome 80gsm printing",
+      "is_active": true,
+      "id": "srv-1789644623782-uisd7t",
+      "created_at": "2026-09-17T11:30:23.782Z"
+    },
+    {
+      "tenant_id": "tnt-1789644623673-b2ehai",
+      "name": "A4 Colour Printing",
+      "category": "printing",
+      "unit_type": "per_page",
+      "price": 2,
+      "description": "Full color digital laser print",
+      "is_active": true,
+      "id": "srv-1789644623783-9xavde",
+      "created_at": "2026-09-17T11:30:23.783Z"
+    },
+    {
+      "tenant_id": "tnt-1789644623673-b2ehai",
+      "name": "Plastic Comb Binding",
+      "category": "finishing",
+      "unit_type": "per_document",
+      "price": 8,
+      "description": "Comb binding with clear cover",
+      "is_active": true,
+      "id": "srv-1789644623784-nhsydo",
+      "created_at": "2026-09-17T11:30:23.784Z"
     }
   ],
   "print_jobs": [
@@ -1333,6 +1477,38 @@
     }
   ],
   "audit_logs": [
+    {
+      "tenant_id": "tnt-1789644623673-b2ehai",
+      "user_id": "usr-1789644623781-wkn8ge",
+      "user_email": "ama.fallback@example.com",
+      "role": "owner",
+      "action": "PRINTING_PRESS_REGISTERED",
+      "resource_type": "tenant",
+      "resource_id": "tnt-1789644623673-b2ehai",
+      "details": {
+        "business_name": "Fallback Press",
+        "slug": "fallback-press"
+      },
+      "ip": "127.0.0.1",
+      "id": "log-1789644623785-uxkusn",
+      "created_at": "2026-09-17T11:30:23.785Z"
+    },
+    {
+      "tenant_id": "tnt-1789644621473-lxd4xh",
+      "user_id": "usr-1789644621618-5a3r5o",
+      "user_email": "kofi.vercel@example.com",
+      "role": "owner",
+      "action": "PRINTING_PRESS_REGISTERED",
+      "resource_type": "tenant",
+      "resource_id": "tnt-1789644621473-lxd4xh",
+      "details": {
+        "business_name": "Global Vercel Print",
+        "slug": "global-vercel-print"
+      },
+      "ip": "127.0.0.1",
+      "id": "log-1789644621622-yjyml8",
+      "created_at": "2026-09-17T11:30:21.622Z"
+    },
     {
       "tenant_id": "tnt-1789642260436-7mclu4",
       "user_id": "usr-1789642260563-itqc00",

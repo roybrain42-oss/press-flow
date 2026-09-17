@@ -6,11 +6,16 @@ import { Request, Response } from 'express';
 import { PDFDocument, rgb, StandardFonts, degrees } from 'pdf-lib';
 import { db } from './db';
 
-const STORAGE_ROOT = path.join(process.cwd(), 'uploads');
+const isServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.NETLIFY);
+const STORAGE_ROOT = isServerless ? path.join('/tmp', 'uploads') : path.join(process.cwd(), 'uploads');
 
 // Ensure root upload directory exists
-if (!fs.existsSync(STORAGE_ROOT)) {
-  fs.mkdirSync(STORAGE_ROOT, { recursive: true });
+try {
+  if (!fs.existsSync(STORAGE_ROOT)) {
+    fs.mkdirSync(STORAGE_ROOT, { recursive: true });
+  }
+} catch (err) {
+  console.warn('[Storage] Notice creating uploads root:', err);
 }
 
 // Allowed MIME types & extensions
@@ -36,8 +41,12 @@ const storageEngine = multer.diskStorage({
     // Determine tenant from param, header, or body
     const tenantSlugOrId = req.params.slug || req.params.tenantId || req.body.tenant_id || 'general';
     const tenantDir = path.join(STORAGE_ROOT, tenantSlugOrId.replace(/[^a-zA-Z0-9_-]/g, '_'));
-    if (!fs.existsSync(tenantDir)) {
-      fs.mkdirSync(tenantDir, { recursive: true });
+    try {
+      if (!fs.existsSync(tenantDir)) {
+        fs.mkdirSync(tenantDir, { recursive: true });
+      }
+    } catch (err) {
+      console.warn('[Storage] Notice creating tenant folder:', err);
     }
     cb(null, tenantDir);
   },

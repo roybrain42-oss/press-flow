@@ -190,7 +190,10 @@ interface DatabaseSchema {
   };
 }
 
-const DB_FILE = path.join(process.cwd(), 'data', 'printflow.json');
+// Detect serverless environment (Vercel, AWS Lambda, Netlify) with read-only root filesystem
+const isServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.NETLIFY);
+const SEED_FILE = path.join(process.cwd(), 'data', 'printflow.json');
+const DB_FILE = isServerless ? path.join('/tmp', 'data', 'printflow.json') : SEED_FILE;
 
 class DatabaseEngine {
   private data: DatabaseSchema = {
@@ -213,10 +216,15 @@ class DatabaseEngine {
 
   private init() {
     const dataDir = path.dirname(DB_FILE);
-    if (!fs.existsSync(dataDir)) {
-      fs.mkdirSync(dataDir, { recursive: true });
+    try {
+      if (!fs.existsSync(dataDir)) {
+        fs.mkdirSync(dataDir, { recursive: true });
+      }
+    } catch (err) {
+      console.warn('[DB] Notice creating data directory:', err);
     }
 
+    // 1. If DB_FILE exists (/tmp/data/printflow.json or local data/printflow.json)
     if (fs.existsSync(DB_FILE)) {
       try {
         const raw = fs.readFileSync(DB_FILE, 'utf-8');
@@ -225,11 +233,25 @@ class DatabaseEngine {
         console.log(`[DB] Database loaded from ${DB_FILE} with ${this.data.tenants.length} tenants and ${this.data.print_jobs.length} jobs.`);
         return;
       } catch (err) {
-        console.error('[DB] Failed to read database file, re-seeding:', err);
+        console.error('[DB] Failed to read database file, attempting fallback:', err);
       }
     }
 
-    // Seed initial data
+    // 2. In serverless, if /tmp has no file yet, copy from bundled seed file
+    if (isServerless && fs.existsSync(SEED_FILE)) {
+      try {
+        const raw = fs.readFileSync(SEED_FILE, 'utf-8');
+        this.data = JSON.parse(raw);
+        this.isLoaded = true;
+        this.persist();
+        console.log(`[DB] Loaded bundled seed data into serverless instance with ${this.data.tenants.length} tenants.`);
+        return;
+      } catch (err) {
+        console.error('[DB] Failed to load bundled seed file:', err);
+      }
+    }
+
+    // 3. Fallback: Seed initial data
     this.seedInitialData();
     this.persist();
     this.isLoaded = true;
@@ -253,7 +275,7 @@ class DatabaseEngine {
       }
       fs.writeFileSync(DB_FILE, JSON.stringify(this.data, null, 2), 'utf-8');
     } catch (err) {
-      console.error('[DB] Error persisting database:', err);
+      console.warn('[DB] Local write notice (using in-memory state):', err);
     }
   }
 
