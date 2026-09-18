@@ -351,7 +351,7 @@ export const CustomerUploadWizard: React.FC<CustomerUploadWizardProps> = ({
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 sm:py-8">
       {/* Header with Press Name and Steps */}
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-4 flex items-center justify-between">
         <div>
           <span className="text-xs font-semibold text-blue-600 uppercase tracking-wider">
             Printing At {press?.name}
@@ -362,10 +362,26 @@ export const CustomerUploadWizard: React.FC<CustomerUploadWizardProps> = ({
         </div>
         <button
           onClick={onCancel}
-          className="text-xs font-medium text-slate-500 hover:text-slate-800 px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors"
+          className="text-xs font-semibold text-slate-600 hover:text-slate-900 px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors"
         >
-          Cancel
+          View Shop Rates & Info
         </button>
+      </div>
+
+      {/* Instant Walk-in Banner */}
+      <div className="mb-6 p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-between gap-3 text-xs text-emerald-900 shadow-xs">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0">
+            <CheckCircle2 className="w-4 h-4" />
+          </div>
+          <div>
+            <p className="font-bold text-emerald-950">Instant Walk-In Printing</p>
+            <p className="text-emerald-700 text-[11px]">No login, registration, or password required. Upload directly to the counter queue.</p>
+          </div>
+        </div>
+        <span className="hidden sm:inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100/80 text-emerald-800 uppercase tracking-wider">
+          No Login Required
+        </span>
       </div>
 
       {/* Step Indicators */}

@@ -98,6 +98,10 @@ export const QRCodeStudio: React.FC = () => {
               <p className="text-xs sm:text-sm text-slate-600 max-w-md mx-auto mt-1">
                 Skip the WhatsApp queue! Upload your document directly from your phone in 30 seconds.
               </p>
+              <div className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs font-bold">
+                <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Instant Walk-In: No Registration or Login Required</span>
+              </div>
             </div>
 
             {/* High-Resolution QR Code Frame */}

@@ -18,6 +18,7 @@ import {
   X,
   ShieldOff,
   ExternalLink,
+  CheckCircle2,
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -348,16 +349,33 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </button>
               </div>
             ) : (
-              <button
-                onClick={() => {
-                  setCurrentView('auth');
-                  setMobileMenuOpen(false);
-                }}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-colors"
-              >
-                <LogIn className="w-4 h-4" />
-                <span>Sign In / Register</span>
-              </button>
+              <div className="flex items-center gap-2">
+                {(currentView === 'customer' || currentView === 'track') && (
+                  <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                    <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                    Guest Walk-in
+                  </span>
+                )}
+                <button
+                  onClick={() => {
+                    setCurrentView('auth');
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    currentView === 'customer' || currentView === 'track'
+                      ? 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200'
+                      : 'text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200'
+                  }`}
+                  title={currentView === 'customer' ? 'Shop operators and owners login here' : 'Sign In or Register'}
+                >
+                  <LogIn className="w-3.5 h-3.5 text-slate-500" />
+                  <span>
+                    {currentView === 'customer' || currentView === 'track'
+                      ? 'Staff / Owner Login'
+                      : 'Sign In / Register'}
+                  </span>
+                </button>
+              </div>
             )}
 
             {/* Mobile Hamburger Toggle */}

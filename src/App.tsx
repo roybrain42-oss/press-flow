@@ -45,17 +45,39 @@ function MainLayout() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
   const [isPortalMode, setIsPortalMode] = useState<boolean>(false);
 
-  // Check URL query params on mount for direct customer QR scan link, tracking link, or portal routing
+  // Check URL path and query params on mount for direct customer QR scan link, tracking link, or portal routing
   useEffect(() => {
+    const pathname = window.location.pathname;
     const params = new URLSearchParams(window.location.search);
-    const portalParam = params.get('portal');
-    const pressParam = params.get('press');
-    const trackParam = params.get('track');
+
+    // Extract potential path-based routing (e.g. /p/:slug, /upload/:slug, /press/:slug, /track/:job, /portal/:slug)
+    let pathPressSlug: string | null = null;
+    let pathTrackJob: string | null = null;
+    let isPathAdmin = false;
+    let isPathPortal: string | null = null;
+
+    if (pathname.startsWith('/p/')) {
+      pathPressSlug = pathname.replace(/^\/p\//, '').split('/')[0] || null;
+    } else if (pathname.startsWith('/upload/')) {
+      pathPressSlug = pathname.replace(/^\/upload\//, '').split('/')[0] || null;
+    } else if (pathname.startsWith('/press/')) {
+      pathPressSlug = pathname.replace(/^\/press\//, '').split('/')[0] || null;
+    } else if (pathname.startsWith('/track/')) {
+      pathTrackJob = pathname.replace(/^\/track\//, '').split('/')[0] || null;
+    } else if (pathname.startsWith('/portal/')) {
+      isPathPortal = pathname.replace(/^\/portal\//, '').split('/')[0] || null;
+    } else if (pathname === '/admin') {
+      isPathAdmin = true;
+    }
+
+    const portalParam = params.get('portal') || isPathPortal;
+    const pressParam = params.get('press') || pathPressSlug;
+    const trackParam = params.get('track') || pathTrackJob;
     const tokenParam = params.get('token');
     const viewParam = params.get('view');
     const adminParam = params.get('admin');
 
-    if (adminParam === 'true' || viewParam === 'admin' || portalParam === 'admin') {
+    if (adminParam === 'true' || viewParam === 'admin' || portalParam === 'admin' || isPathAdmin) {
       setIsPortalMode(false);
       if (role === 'super_admin') {
         setCurrentView('admin');
@@ -87,17 +109,25 @@ function MainLayout() {
       setCurrentView('customer');
       setCustomerSubView('tracking');
     } else if (pressParam) {
+      // CUSTOMER QR CODE SCAN / DIRECT SHOP LINK:
+      // Instantly allow customer to upload a document WITHOUT requiring registration or login!
       setSelectedPressSlug(pressParam);
       setCurrentView('customer');
-      setCustomerSubView('profile');
+      if (viewParam === 'profile') {
+        setCustomerSubView('profile');
+      } else {
+        // Default to instant document upload wizard
+        setCustomerSubView('upload');
+      }
     } else if (viewParam === 'dashboard') {
       if (user) {
         setCurrentView('dashboard');
       } else {
         setCurrentView('auth');
       }
-    } else if (viewParam === 'customer') {
+    } else if (viewParam === 'customer' || viewParam === 'upload') {
       setCurrentView('customer');
+      setCustomerSubView('upload');
     } else if (viewParam === 'track') {
       setCurrentView('track');
     } else {
@@ -136,7 +166,7 @@ function MainLayout() {
         currentView={currentView}
         setCurrentView={(view) => {
           setCurrentView(view);
-          if (view === 'customer') setCustomerSubView('profile');
+          if (view === 'customer') setCustomerSubView('upload');
         }}
         dashboardTab={dashboardTab}
         setDashboardTab={setDashboardTab}
@@ -147,7 +177,7 @@ function MainLayout() {
         onExitPortal={() => {
           setIsPortalMode(false);
           setCurrentView('customer');
-          setCustomerSubView('profile');
+          setCustomerSubView('upload');
         }}
       />
 
