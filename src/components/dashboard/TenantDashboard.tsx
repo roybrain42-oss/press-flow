@@ -89,6 +89,19 @@ export const TenantDashboard: React.FC<TenantDashboardProps> = ({ onSwitchTab })
 
   useEffect(() => {
     fetchDashboardAndJobs();
+
+    // Real-time polling every 6 seconds so incoming customer orders appear instantly
+    const pollInterval = setInterval(() => {
+      api.getTenantDashboard().then(setDashboardData).catch(console.error);
+      api.getTenantJobs({
+        search: searchQuery || undefined,
+        status: statusFilter,
+        payment_status: paymentFilter,
+        date_range: dateRange,
+      }).then(setJobs).catch(console.error);
+    }, 6000);
+
+    return () => clearInterval(pollInterval);
   }, [statusFilter, paymentFilter, dateRange]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {

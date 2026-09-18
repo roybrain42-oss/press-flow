@@ -99,13 +99,14 @@ router.get('/jobs', (req: Request, res: Response) => {
   }
 
   if (search) {
-    const q = String(search).toLowerCase();
+    const q = String(search).toLowerCase().trim();
     jobs = jobs.filter(
       (j) =>
-        j.job_number.toLowerCase().includes(q) ||
-        j.customer_name.toLowerCase().includes(q) ||
-        j.customer_phone.toLowerCase().includes(q) ||
-        j.document_name.toLowerCase().includes(q)
+        (j.job_number && j.job_number.toLowerCase().includes(q)) ||
+        (j.customer_name && j.customer_name.toLowerCase().includes(q)) ||
+        (j.customer_phone && j.customer_phone.toLowerCase().includes(q)) ||
+        (j.document_name && j.document_name.toLowerCase().includes(q)) ||
+        (j.id && j.id.toLowerCase().includes(q))
     );
   }
 

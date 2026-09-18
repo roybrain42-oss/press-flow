@@ -1280,22 +1280,40 @@ class DatabaseEngine {
     return [...this.data.print_jobs].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
   }
 
-  public getPrintJobById(id: string, tenantId?: string): PrintJob | undefined {
+  public getPrintJobById(id: string, tenantId?: string | null): PrintJob | undefined {
+    if (!id) return undefined;
+    const cleanId = id.trim().toLowerCase();
     if (tenantId) {
-      return this.data.print_jobs.find((j) => j.id === id && j.tenant_id === tenantId);
+      return this.data.print_jobs.find(
+        (j) => (j.id.toLowerCase() === cleanId || j.job_number.toLowerCase() === cleanId) && j.tenant_id === tenantId
+      );
     }
-    return this.data.print_jobs.find((j) => j.id === id);
+    return this.data.print_jobs.find(
+      (j) => j.id.toLowerCase() === cleanId || j.job_number.toLowerCase() === cleanId
+    );
   }
 
-  public getPrintJobByNumberAndToken(jobNumber: string, trackingToken: string): PrintJob | undefined {
+  public getPrintJobByNumberAndToken(jobNumber: string, trackingToken?: string | null): PrintJob | undefined {
+    if (!jobNumber) return undefined;
+    const cleanNum = jobNumber.trim().toLowerCase();
+    const cleanToken = trackingToken ? trackingToken.trim() : null;
+
+    if (!cleanToken) {
+      return this.getPrintJobByNumber(cleanNum);
+    }
+
     return this.data.print_jobs.find(
-      (j) => j.job_number.toLowerCase() === jobNumber.toLowerCase().trim() && j.tracking_token === trackingToken.trim()
+      (j) =>
+        (j.job_number.toLowerCase() === cleanNum || j.id.toLowerCase() === cleanNum) &&
+        j.tracking_token === cleanToken
     );
   }
 
   public getPrintJobByNumber(jobNumber: string): PrintJob | undefined {
+    if (!jobNumber) return undefined;
+    const cleanNum = jobNumber.trim().toLowerCase();
     return this.data.print_jobs.find(
-      (j) => j.job_number.toLowerCase() === jobNumber.toLowerCase().trim()
+      (j) => j.job_number.toLowerCase() === cleanNum || j.id.toLowerCase() === cleanNum
     );
   }
 
@@ -1315,8 +1333,12 @@ class DatabaseEngine {
   }
 
   public updatePrintJob(id: string, tenantId: string | null, updates: Partial<PrintJob>): PrintJob | undefined {
+    if (!id) return undefined;
+    const cleanId = id.trim().toLowerCase();
     const idx = this.data.print_jobs.findIndex(
-      (j) => j.id === id && (tenantId === null || j.tenant_id === tenantId)
+      (j) =>
+        (j.id.toLowerCase() === cleanId || j.job_number.toLowerCase() === cleanId) &&
+        (tenantId === null || j.tenant_id === tenantId)
     );
     if (idx === -1) return undefined;
     this.data.print_jobs[idx] = {

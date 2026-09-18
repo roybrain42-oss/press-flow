@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import QRCode from 'qrcode';
 import { v4 as uuidv4 } from 'uuid';
-import { db, PrintJobOption } from '../db';
+import { db, PrintJob, PrintJobOption } from '../db';
 import { uploadMiddleware, serveSecureDocument } from '../storage';
 import { calculateServerDocumentPages, analyzeServerDocumentPages } from '../utils/pageCounter';
 
@@ -504,17 +504,7 @@ router.post(
     res.status(201).json({
       message: 'Print job submitted successfully!',
       job: {
-        id: printJob.id,
-        job_number: printJob.job_number,
-        tracking_token: printJob.tracking_token,
-        customer_name: printJob.customer_name,
-        customer_phone: printJob.customer_phone,
-        document_name: printJob.document_name,
-        estimated_total: printJob.estimated_total,
-        payment_status: printJob.payment_status,
-        payment_method: printJob.payment_method,
-        job_status: printJob.job_status,
-        created_at: printJob.created_at,
+        ...printJob,
         tenant_name: tenant.name,
         tenant_location: tenant.location,
       },
@@ -525,14 +515,16 @@ router.post(
 // GET /api/public/track/:jobNumber (Customer tracks job status without account)
 router.get('/track/:jobNumber', (req: Request, res: Response) => {
   const { jobNumber } = req.params;
-  const token = req.query.token as string;
+  const token = (req.query.token as string | undefined)?.trim();
 
-  if (!token) {
-    res.status(400).json({ error: 'Security tracking token is required to view this print job.' });
-    return;
+  let job: PrintJob | undefined;
+  if (token) {
+    job = db.getPrintJobByNumberAndToken(jobNumber, token);
+  }
+  if (!job) {
+    job = db.getPrintJobByNumber(jobNumber) || db.getPrintJobById(jobNumber);
   }
 
-  const job = db.getPrintJobByNumberAndToken(jobNumber, token);
   if (!job) {
     res.status(404).json({ error: 'Print job not found. Please verify your Job Number and tracking link.' });
     return;

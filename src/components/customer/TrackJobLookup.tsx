@@ -25,10 +25,13 @@ export const TrackJobLookup: React.FC<TrackJobLookupProps> = ({ onFoundJob, onBa
 
     try {
       // Validate that the job exists
-      await api.trackJob(jobNumber.trim(), token.trim());
-      onFoundJob(jobNumber.trim(), token.trim());
+      const cleanJobNum = jobNumber.trim().toUpperCase();
+      const cleanToken = token.trim();
+      const res = await api.trackJob(cleanJobNum, cleanToken || undefined);
+      const resolvedToken = cleanToken || res.job.tracking_token || '';
+      onFoundJob(cleanJobNum, resolvedToken);
     } catch (err: any) {
-      setError(err.message || 'No active job found with these details.');
+      setError(err.message || 'No active job found with this Job Number. Please verify your receipt.');
     } finally {
       setIsSearching(false);
     }

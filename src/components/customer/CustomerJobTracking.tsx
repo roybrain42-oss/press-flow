@@ -29,21 +29,25 @@ import { JobTrackingPreviewModal } from './JobTrackingPreviewModal';
 
 interface CustomerJobTrackingProps {
   jobNumber: string;
-  token: string;
+  token?: string;
+  initialJob?: PrintJob | null;
   onBackToShop: () => void;
 }
 
 export const CustomerJobTracking: React.FC<CustomerJobTrackingProps> = ({
   jobNumber,
   token,
+  initialJob,
   onBackToShop,
 }) => {
   const { role } = useAuth();
   const isStaffOrOwner = role === 'staff' || role === 'owner' || role === 'super_admin';
 
-  const [job, setJob] = useState<PrintJob | null>(null);
-  const [press, setPress] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [job, setJob] = useState<PrintJob | null>(initialJob || null);
+  const [press, setPress] = useState<any>(
+    initialJob ? { name: (initialJob as any).tenant_name, location: (initialJob as any).tenant_location } : null
+  );
+  const [isLoading, setIsLoading] = useState<boolean>(!initialJob);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState<boolean>(false);
   const [isPaying, setIsPaying] = useState<boolean>(false);
@@ -51,26 +55,38 @@ export const CustomerJobTracking: React.FC<CustomerJobTrackingProps> = ({
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState<boolean>(false);
 
   const fetchJobStatus = async () => {
+    if (!jobNumber) return;
     try {
-      const data = await api.trackJob(jobNumber, token);
+      const activeToken = token || job?.tracking_token;
+      const data = await api.trackJob(jobNumber, activeToken);
       setJob(data.job);
-      setPress(data.press);
+      if (data.press) setPress(data.press);
+      setError(null);
     } catch (err: any) {
-      setError(err.message || 'Unable to track job.');
+      if (!job) {
+        setError(err.message || 'Unable to track job.');
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
+    if (initialJob) {
+      setJob(initialJob);
+      setIsLoading(false);
+    }
     fetchJobStatus();
     // Poll every 8 seconds for real-time live status updates while viewing
     const interval = setInterval(fetchJobStatus, 8000);
     return () => clearInterval(interval);
-  }, [jobNumber, token]);
+  }, [jobNumber, token, initialJob?.id]);
 
   const copyTrackingLink = () => {
-    const trackingUrl = `${window.location.origin}/?track=${encodeURIComponent(jobNumber)}&token=${encodeURIComponent(token)}`;
+    const activeToken = token || job?.tracking_token;
+    const trackingUrl = activeToken
+      ? `${window.location.origin}/?track=${encodeURIComponent(jobNumber)}&token=${encodeURIComponent(activeToken)}`
+      : `${window.location.origin}/?track=${encodeURIComponent(jobNumber)}`;
     navigator.clipboard.writeText(trackingUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
@@ -80,7 +96,8 @@ export const CustomerJobTracking: React.FC<CustomerJobTrackingProps> = ({
     if (!job) return;
     setIsPaying(true);
     try {
-      const res = await api.simulatePaystackPayment(job.id, token, job.customer_email);
+      const activeToken = token || job?.tracking_token;
+      const res = await api.simulatePaystackPayment(job.id, activeToken || '', job.customer_email);
       setPaySuccess(`Payment of GH₵${res.amount.toFixed(2)} confirmed via Paystack (Ref: ${res.reference})`);
       fetchJobStatus();
     } catch (err: any) {
@@ -109,12 +126,23 @@ export const CustomerJobTracking: React.FC<CustomerJobTrackingProps> = ({
         </div>
         <h2 className="text-lg font-bold text-slate-900 mb-1">Print Job Not Found</h2>
         <p className="text-xs text-slate-600 mb-6">{error || 'Please check your Job Number and Security Token.'}</p>
-        <button
-          onClick={onBackToShop}
-          className="w-full py-2.5 px-4 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-700"
-        >
-          Return to Shop
-        </button>
+        <div className="flex flex-col sm:flex-row items-center gap-2">
+          <button
+            onClick={() => {
+              setIsLoading(true);
+              fetchJobStatus();
+            }}
+            className="w-full py-2.5 px-4 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-700 transition-colors"
+          >
+            Check Status Again
+          </button>
+          <button
+            onClick={onBackToShop}
+            className="w-full py-2.5 px-4 bg-slate-100 text-slate-700 text-sm font-semibold rounded-xl hover:bg-slate-200 transition-colors"
+          >
+            Return to Shop
+          </button>
+        </div>
       </div>
     );
   }

@@ -23,6 +23,7 @@ import { SuperAdminDashboard } from './components/admin/SuperAdminDashboard';
 import { RegisterPressModal } from './components/modals/RegisterPressModal';
 import { LoginModal } from './components/modals/LoginModal';
 import { AuthPage } from './components/auth/AuthPage';
+import { PrintJob } from './types';
 import { PrintFlowIcon } from './components/common/PrintFlowLogo';
 
 function MainLayout() {
@@ -33,6 +34,7 @@ function MainLayout() {
   const [customerSubView, setCustomerSubView] = useState<'profile' | 'upload' | 'tracking'>('profile');
   const [trackJobNumber, setTrackJobNumber] = useState<string>('');
   const [trackToken, setTrackToken] = useState<string>('');
+  const [initialTrackJob, setInitialTrackJob] = useState<PrintJob | null>(null);
 
   // Dashboard Tab state
   const [dashboardTab, setDashboardTab] = useState<string>('jobs'); // 'jobs' | 'pricing' | 'qr' | 'staff' | 'analytics' | 'settings'
@@ -216,7 +218,16 @@ function MainLayout() {
                 onSuccess={(job) => {
                   setTrackJobNumber(job.job_number);
                   setTrackToken(job.tracking_token);
+                  setInitialTrackJob(job);
                   setCustomerSubView('tracking');
+                  try {
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('track', job.job_number);
+                    if (job.tracking_token) {
+                      url.searchParams.set('token', job.tracking_token);
+                    }
+                    window.history.pushState({}, '', url.toString());
+                  } catch (e) {}
                 }}
                 onCancel={() => setCustomerSubView('profile')}
               />
@@ -226,6 +237,7 @@ function MainLayout() {
               <CustomerJobTracking
                 jobNumber={trackJobNumber}
                 token={trackToken}
+                initialJob={initialTrackJob}
                 onBackToShop={() => setCustomerSubView('profile')}
               />
             )}
@@ -238,8 +250,15 @@ function MainLayout() {
             onFoundJob={(jobNum, tok) => {
               setTrackJobNumber(jobNum);
               setTrackToken(tok);
+              setInitialTrackJob(null);
               setCurrentView('customer');
               setCustomerSubView('tracking');
+              try {
+                const url = new URL(window.location.href);
+                url.searchParams.set('track', jobNum);
+                if (tok) url.searchParams.set('token', tok);
+                window.history.pushState({}, '', url.toString());
+              } catch (e) {}
             }}
             onBackToShop={() => setCurrentView('customer')}
           />

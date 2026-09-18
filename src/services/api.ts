@@ -182,8 +182,12 @@ export const api = {
     return handleResponse(res);
   },
 
-  async trackJob(jobNumber: string, token: string): Promise<{ job: PrintJob; press: any }> {
-    const res = await fetch(`${API_BASE}/public/track/${encodeURIComponent(jobNumber)}?token=${encodeURIComponent(token)}`);
+  async trackJob(jobNumber: string, token?: string): Promise<{ job: PrintJob; press: any }> {
+    const cleanNum = encodeURIComponent(jobNumber.trim());
+    const url = token && token.trim()
+      ? `${API_BASE}/public/track/${cleanNum}?token=${encodeURIComponent(token.trim())}`
+      : `${API_BASE}/public/track/${cleanNum}`;
+    const res = await fetch(url);
     return handleResponse(res);
   },
 
