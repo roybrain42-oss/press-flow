@@ -291,6 +291,14 @@ export const api = {
     return handleResponse(res);
   },
 
+  async deleteStaff(id: string): Promise<{ success: boolean; message: string }> {
+    const res = await fetch(`${API_BASE}/tenant/staff/${id}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+    });
+    return handleResponse(res);
+  },
+
   async getTenantSettings(): Promise<Tenant> {
     const res = await fetch(`${API_BASE}/tenant/settings`, {
       headers: getAuthHeaders(),

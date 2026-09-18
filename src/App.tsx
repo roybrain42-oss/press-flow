@@ -122,6 +122,13 @@ function MainLayout() {
     }
   }, [currentView, role, user]);
 
+  // RBAC Guard: Staff cannot access Staff, Settings, or Analytics tabs
+  useEffect(() => {
+    if (role === 'staff' && (dashboardTab === 'staff' || dashboardTab === 'settings' || dashboardTab === 'analytics')) {
+      setDashboardTab('jobs');
+    }
+  }, [role, dashboardTab]);
+
   return (
     <div className="min-h-screen bg-slate-100/70 text-slate-900 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
       {/* Single Navigation Bar */}
@@ -277,48 +284,93 @@ function MainLayout() {
                     <QrCode className="w-4 h-4" />
                     <span>QR Countertop</span>
                   </button>
-                  <button
-                    onClick={() => setDashboardTab('staff')}
-                    className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors whitespace-nowrap ${
-                      dashboardTab === 'staff'
-                        ? 'bg-blue-600 text-white shadow-xs'
-                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-                    }`}
-                  >
-                    <Users className="w-4 h-4" />
-                    <span>Staff</span>
-                  </button>
-                  <button
-                    onClick={() => setDashboardTab('analytics')}
-                    className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors whitespace-nowrap ${
-                      dashboardTab === 'analytics'
-                        ? 'bg-blue-600 text-white shadow-xs'
-                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-                    }`}
-                  >
-                    <BarChart3 className="w-4 h-4" />
-                    <span>Analytics</span>
-                  </button>
-                  <button
-                    onClick={() => setDashboardTab('settings')}
-                    className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors whitespace-nowrap ${
-                      dashboardTab === 'settings'
-                        ? 'bg-blue-600 text-white shadow-xs'
-                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-                    }`}
-                  >
-                    <Settings className="w-4 h-4" />
-                    <span>Settings</span>
-                  </button>
+                  {/* Owner & Super Admin only tabs: Staff, Analytics, Settings */}
+                  {role !== 'staff' && (
+                    <>
+                      <button
+                        onClick={() => setDashboardTab('staff')}
+                        className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors whitespace-nowrap ${
+                          dashboardTab === 'staff'
+                            ? 'bg-blue-600 text-white shadow-xs'
+                            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                        }`}
+                      >
+                        <Users className="w-4 h-4" />
+                        <span>Staff</span>
+                      </button>
+                      <button
+                        onClick={() => setDashboardTab('analytics')}
+                        className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors whitespace-nowrap ${
+                          dashboardTab === 'analytics'
+                            ? 'bg-blue-600 text-white shadow-xs'
+                            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                        }`}
+                      >
+                        <BarChart3 className="w-4 h-4" />
+                        <span>Analytics</span>
+                      </button>
+                      <button
+                        onClick={() => setDashboardTab('settings')}
+                        className={`px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 transition-colors whitespace-nowrap ${
+                          dashboardTab === 'settings'
+                            ? 'bg-blue-600 text-white shadow-xs'
+                            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                        }`}
+                      >
+                        <Settings className="w-4 h-4" />
+                        <span>Settings</span>
+                      </button>
+                    </>
+                  )}
                 </div>
 
                 <div>
                   {dashboardTab === 'jobs' && <TenantDashboard onSwitchTab={(tab: string) => setDashboardTab(tab as any)} />}
                   {dashboardTab === 'pricing' && <ServicesPricingManager />}
                   {dashboardTab === 'qr' && <QRCodeStudio />}
-                  {dashboardTab === 'staff' && <StaffManager />}
+                  {dashboardTab === 'staff' && (
+                    role === 'staff' ? (
+                      <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center max-w-md mx-auto shadow-xs my-8">
+                        <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-amber-200">
+                          <Users className="w-6 h-6" />
+                        </div>
+                        <h3 className="text-base font-bold text-slate-900 mb-1">Owner Access Only</h3>
+                        <p className="text-xs text-slate-500 mb-6">
+                          Staff management and creating new staff members is restricted to the printing press owner.
+                        </p>
+                        <button
+                          onClick={() => setDashboardTab('jobs')}
+                          className="px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition"
+                        >
+                          Return to Print Queue
+                        </button>
+                      </div>
+                    ) : (
+                      <StaffManager />
+                    )
+                  )}
                   {dashboardTab === 'analytics' && <TenantAnalytics />}
-                  {dashboardTab === 'settings' && <TenantSettings />}
+                  {dashboardTab === 'settings' && (
+                    role === 'staff' ? (
+                      <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center max-w-md mx-auto shadow-xs my-8">
+                        <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-amber-200">
+                          <Settings className="w-6 h-6" />
+                        </div>
+                        <h3 className="text-base font-bold text-slate-900 mb-1">Owner Access Only</h3>
+                        <p className="text-xs text-slate-500 mb-6">
+                          System settings, payment options, and shop preferences can only be modified by the printing press owner.
+                        </p>
+                        <button
+                          onClick={() => setDashboardTab('jobs')}
+                          className="px-4 py-2 bg-blue-600 text-white rounded-xl text-xs font-bold hover:bg-blue-700 transition"
+                        >
+                          Return to Print Queue
+                        </button>
+                      </div>
+                    ) : (
+                      <TenantSettings />
+                    )
+                  )}
                 </div>
               </div>
             )}

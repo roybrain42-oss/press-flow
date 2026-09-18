@@ -1152,6 +1152,35 @@ class DatabaseEngine {
     return undefined;
   }
 
+  /**
+   * Asynchronously find user by ID, falling back to Cloud Firestore on cache miss.
+   * Caches the user in-memory for subsequent requests.
+   */
+  public async getUserByIdAsync(id: string): Promise<User | undefined> {
+    const local = this.getUserById(id);
+    if (local) return local;
+
+    try {
+      const remote = await fetchDocFromFirestore<User>('users', id);
+      if (remote) {
+        const existingIdx = this.data.users.findIndex((u) => u.id === remote.id);
+        if (existingIdx !== -1) {
+          this.data.users[existingIdx] = {
+            ...remote,
+            password_hash: remote.password_hash || this.data.users[existingIdx].password_hash,
+          };
+        } else {
+          this.data.users.push(remote);
+        }
+        this.persist();
+        return remote;
+      }
+    } catch (err) {
+      console.error(`[DB] Error fetching user ${id} from Firestore:`, err);
+    }
+    return undefined;
+  }
+
   public createUser(user: Omit<User, 'id' | 'created_at' | 'updated_at'>): User {
     const id = `usr-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
     const now = new Date().toISOString();

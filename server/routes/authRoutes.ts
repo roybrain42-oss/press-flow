@@ -336,13 +336,17 @@ router.post('/register-press', async (req: Request, res: Response) => {
 });
 
 // GET /api/auth/me
-router.get('/me', authenticate, (req: Request, res: Response) => {
+router.get('/me', authenticate, async (req: Request, res: Response) => {
   if (!req.user) {
     res.status(401).json({ error: 'Unauthorized' });
     return;
   }
 
-  const user = db.getUserById(req.user.id);
+  let user = db.getUserById(req.user.id);
+  if (!user) {
+    user = await db.getUserByIdAsync(req.user.id);
+  }
+
   if (!user) {
     res.status(404).json({ error: 'User not found' });
     return;
@@ -350,7 +354,7 @@ router.get('/me', authenticate, (req: Request, res: Response) => {
 
   let tenant = null;
   if (user.tenant_id) {
-    tenant = db.getTenantById(user.tenant_id);
+    tenant = await db.getTenantByIdAsync(user.tenant_id);
   }
 
   res.json({

@@ -33,7 +33,7 @@ import { DesktopInstallModal } from '../modals/DesktopInstallModal';
 import { usePWAInstall } from '../../hooks/usePWAInstall';
 
 export const TenantSettings: React.FC = () => {
-  const { user, tenant, refreshMe, updateUserProfile } = useAuth();
+  const { user, tenant, role, refreshMe, updateUserProfile } = useAuth();
   const [name, setName] = useState<string>('');
   const [phone, setPhone] = useState<string>('');
   const [email, setEmail] = useState<string>('');
@@ -64,6 +64,24 @@ export const TenantSettings: React.FC = () => {
   const [isUpdatingProfile, setIsUpdatingProfile] = useState<boolean>(false);
   const [profileSuccess, setProfileSuccess] = useState<string | null>(null);
   const [profileError, setProfileError] = useState<string | null>(null);
+
+  // If user is staff, show access restricted view
+  if (role === 'staff') {
+    return (
+      <div className="bg-white rounded-2xl border border-slate-200 p-8 text-center max-w-lg mx-auto shadow-xs my-8">
+        <div className="w-14 h-14 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-amber-200">
+          <Lock className="w-7 h-7" />
+        </div>
+        <div className="inline-block px-3 py-1 bg-amber-100 text-amber-800 text-[11px] font-bold rounded-full uppercase tracking-wider mb-2">
+          Staff Operator Role
+        </div>
+        <h2 className="text-lg font-bold text-slate-900 mb-2">System Settings Restricted</h2>
+        <p className="text-xs text-slate-600 leading-relaxed mb-6">
+          You are currently signed in as a Press Operator. System settings, payment configurations, and business identity controls can only be managed by the printing press owner.
+        </p>
+      </div>
+    );
+  }
 
   const directDashboardUrl = `${window.location.origin}/?portal=${tenant?.slug || 'bright-digital-printing'}`;
   const countertopQrUrl = `${window.location.origin}/?press=${tenant?.slug || 'bright-digital-printing'}`;

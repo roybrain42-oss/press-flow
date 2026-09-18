@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs';
 import { db, JobStatus } from '../db';
 import { authenticate, requireRole, verifyTenant } from '../auth';
 import { serveSecureDocument } from '../storage';
+import { syncDocToFirestore, deleteDocFromFirestore } from '../firebase';
 
 const router = Router();
 
@@ -342,52 +343,107 @@ router.get('/staff', requireRole('owner', 'super_admin'), (req: Request, res: Re
 });
 
 // POST /api/tenant/staff (Owner only: Add staff member)
-router.post('/staff', requireRole('owner', 'super_admin'), (req: Request, res: Response) => {
+router.post('/staff', requireRole('owner', 'super_admin'), async (req: Request, res: Response) => {
+  try {
+    const tenantId = getTenantId(req);
+    const { name, email, phone, password } = req.body;
+
+    if (!name || !email || !password) {
+      res.status(400).json({ error: 'Staff name, email, and password are required.' });
+      return;
+    }
+
+    const cleanEmail = String(email).trim().toLowerCase();
+    const cleanName = String(name).trim();
+
+    if (password.length < 6) {
+      res.status(400).json({ error: 'Temporary password must be at least 6 characters.' });
+      return;
+    }
+
+    // Check memory and Firestore for existing user
+    const existingUser = await db.getUserByEmailAsync(cleanEmail);
+    if (existingUser) {
+      res.status(409).json({ error: 'A user account with this email address already exists.' });
+      return;
+    }
+
+    const passwordHash = bcrypt.hashSync(password, 10);
+
+    const newStaff = db.createUser({
+      tenant_id: tenantId,
+      role: 'staff',
+      name: cleanName,
+      email: cleanEmail,
+      password_hash: passwordHash,
+      phone: phone ? String(phone).trim() : '',
+      status: 'active',
+    });
+
+    // Ensure staff account is reliably persisted to Firestore
+    try {
+      await syncDocToFirestore('users', newStaff.id, newStaff);
+    } catch (syncErr) {
+      console.warn('[Staff] Warning persisting new staff to Firestore:', syncErr);
+    }
+
+    db.addAuditLog({
+      tenant_id: tenantId,
+      user_id: req.user?.id,
+      user_email: req.user?.email,
+      role: req.user?.role,
+      action: 'STAFF_ACCOUNT_CREATED',
+      resource_type: 'user',
+      resource_id: newStaff.id,
+      details: { name: cleanName, email: cleanEmail },
+      ip: req.ip,
+    });
+
+    res.status(201).json({
+      id: newStaff.id,
+      name: newStaff.name,
+      email: newStaff.email,
+      role: newStaff.role,
+      phone: newStaff.phone,
+      status: newStaff.status,
+    });
+  } catch (err: any) {
+    console.error('[Tenant Staff] Error adding staff:', err);
+    res.status(500).json({ error: err?.message || 'Failed to add staff member.' });
+  }
+});
+
+// DELETE /api/tenant/staff/:id (Owner only: Remove staff member)
+router.delete('/staff/:id', requireRole('owner', 'super_admin'), (req: Request, res: Response) => {
   const tenantId = getTenantId(req);
-  const { name, email, phone, password } = req.body;
+  const id = req.params.id;
+  const user = db.getUserById(id);
 
-  if (!name || !email || !password) {
-    res.status(400).json({ error: 'Staff name, email, and password are required.' });
+  if (!user || user.tenant_id !== tenantId) {
+    res.status(404).json({ error: 'Staff member not found in this printing press.' });
     return;
   }
 
-  if (db.getUserByEmail(email)) {
-    res.status(409).json({ error: 'User with this email already exists.' });
+  if (user.role === 'owner') {
+    res.status(400).json({ error: 'The press owner account cannot be removed from staff list.' });
     return;
   }
 
-  const passwordHash = bcrypt.hashSync(password, 10);
-
-  const newStaff = db.createUser({
-    tenant_id: tenantId,
-    role: 'staff',
-    name,
-    email,
-    password_hash: passwordHash,
-    phone: phone || '',
-    status: 'active',
-  });
+  db.deleteUser(id, tenantId);
 
   db.addAuditLog({
     tenant_id: tenantId,
     user_id: req.user?.id,
     user_email: req.user?.email,
     role: req.user?.role,
-    action: 'STAFF_ACCOUNT_CREATED',
+    action: 'STAFF_ACCOUNT_DELETED',
     resource_type: 'user',
-    resource_id: newStaff.id,
-    details: { name, email },
+    resource_id: id,
+    details: { email: user.email, name: user.name },
     ip: req.ip,
   });
 
-  res.status(201).json({
-    id: newStaff.id,
-    name: newStaff.name,
-    email: newStaff.email,
-    role: newStaff.role,
-    phone: newStaff.phone,
-    status: newStaff.status,
-  });
+  res.json({ success: true, message: 'Staff member account removed.' });
 });
 
 

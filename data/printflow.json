@@ -14,16 +14,16 @@
       "status": "active",
       "plan_id": "premium",
       "settings": {
+        "operating_hours": "Monday – Saturday: 7:30 AM – 8:00 PM (Closed Sundays)",
+        "currency": "GHS",
+        "allow_notes": true,
+        "pay_at_shop_enabled": true,
         "payment_provider": "paystack",
         "online_payment_enabled": true,
-        "contact_whatsapp": "+233244567890",
-        "operating_hours": "Monday – Saturday: 7:30 AM – 8:00 PM (Closed Sundays)",
-        "document_retention_days": 30,
-        "max_file_size_mb": 30,
-        "pay_at_shop_enabled": true,
         "currency_symbol": "GH₵",
-        "allow_notes": true,
-        "currency": "GHS"
+        "contact_whatsapp": "+233244567890",
+        "document_retention_days": 30,
+        "max_file_size_mb": 30
       },
       "created_at": "2026-01-10T09:00:00.000Z",
       "updated_at": "2026-09-12T23:11:32.685Z"
@@ -124,14 +124,14 @@
       "status": "active",
       "plan_id": "free",
       "settings": {
+        "document_retention_days": 14,
+        "pay_at_shop_enabled": true,
+        "payment_provider": "paystack",
+        "currency": "GHS",
+        "allow_notes": true,
+        "operating_hours": "Mon–Sat: 8:00 AM – 7:00 PM",
         "max_file_size_mb": 25,
         "currency_symbol": "GH₵",
-        "operating_hours": "Mon–Sat: 8:00 AM – 7:00 PM",
-        "pay_at_shop_enabled": true,
-        "allow_notes": true,
-        "currency": "GHS",
-        "document_retention_days": 14,
-        "payment_provider": "paystack",
         "online_payment_enabled": false
       },
       "id": "tnt-1789423875393-fxj7ox",
@@ -151,15 +151,15 @@
       "status": "active",
       "plan_id": "free",
       "settings": {
-        "payment_provider": "paystack",
-        "pay_at_shop_enabled": true,
-        "online_payment_enabled": false,
-        "document_retention_days": 14,
-        "currency": "GHS",
-        "allow_notes": true,
-        "max_file_size_mb": 25,
         "currency_symbol": "GH₵",
-        "operating_hours": "Monday – Saturday: 8:00 AM – 7:00 PM"
+        "pay_at_shop_enabled": true,
+        "document_retention_days": 14,
+        "payment_provider": "paystack",
+        "currency": "GHS",
+        "operating_hours": "Monday – Saturday: 8:00 AM – 7:00 PM",
+        "max_file_size_mb": 25,
+        "allow_notes": true,
+        "online_payment_enabled": false
       },
       "id": "tnt-1789424085930-0c1g51",
       "created_at": "2026-09-14T22:14:45.930Z",
@@ -178,15 +178,15 @@
       "status": "active",
       "plan_id": "free",
       "settings": {
-        "max_file_size_mb": 25,
         "online_payment_enabled": false,
-        "operating_hours": "Monday – Saturday: 8:00 AM – 7:00 PM",
-        "allow_notes": true,
+        "max_file_size_mb": 25,
         "currency_symbol": "GH₵",
-        "payment_provider": "paystack",
-        "currency": "GHS",
+        "document_retention_days": 14,
         "pay_at_shop_enabled": true,
-        "document_retention_days": 14
+        "currency": "GHS",
+        "allow_notes": true,
+        "payment_provider": "paystack",
+        "operating_hours": "Monday – Saturday: 8:00 AM – 7:00 PM"
       },
       "id": "tnt-1789424212384-hauiy8",
       "created_at": "2026-09-14T22:16:52.384Z",
@@ -205,15 +205,15 @@
       "status": "active",
       "plan_id": "free",
       "settings": {
+        "pay_at_shop_enabled": true,
         "payment_provider": "paystack",
-        "online_payment_enabled": false,
         "currency": "GHS",
         "currency_symbol": "GH₵",
+        "online_payment_enabled": false,
         "operating_hours": "Monday – Saturday: 8:00 AM – 7:00 PM",
         "max_file_size_mb": 25,
         "document_retention_days": 14,
-        "allow_notes": true,
-        "pay_at_shop_enabled": true
+        "allow_notes": true
       },
       "id": "tnt-1789424429186-xl8nfl",
       "created_at": "2026-09-14T22:20:29.186Z",
@@ -232,15 +232,15 @@
       "status": "active",
       "plan_id": "free",
       "settings": {
+        "document_retention_days": 14,
+        "allow_notes": true,
+        "operating_hours": "Mon–Sat: 8:00 AM – 7:00 PM",
+        "payment_provider": "paystack",
         "currency": "GHS",
         "online_payment_enabled": false,
-        "payment_provider": "paystack",
-        "operating_hours": "Mon–Sat: 8:00 AM – 7:00 PM",
-        "allow_notes": true,
         "currency_symbol": "GH₵",
-        "pay_at_shop_enabled": true,
-        "document_retention_days": 14,
-        "max_file_size_mb": 25
+        "max_file_size_mb": 25,
+        "pay_at_shop_enabled": true
       },
       "id": "tnt-1789641587683-bjstg3",
       "created_at": "2026-09-17T10:39:47.683Z",
@@ -259,15 +259,15 @@
       "status": "active",
       "plan_id": "free",
       "settings": {
-        "document_retention_days": 14,
+        "pay_at_shop_enabled": true,
         "max_file_size_mb": 25,
         "operating_hours": "Monday – Saturday: 8:00 AM – 7:00 PM",
         "currency": "GHS",
-        "currency_symbol": "GH₵",
-        "pay_at_shop_enabled": true,
-        "online_payment_enabled": false,
         "payment_provider": "paystack",
-        "allow_notes": true
+        "allow_notes": true,
+        "online_payment_enabled": false,
+        "document_retention_days": 14,
+        "currency_symbol": "GH₵"
       },
       "id": "tnt-1789641983457-rjs3oh",
       "created_at": "2026-09-17T10:46:23.457Z",
@@ -286,15 +286,15 @@
       "status": "active",
       "plan_id": "free",
       "settings": {
-        "document_retention_days": 14,
-        "pay_at_shop_enabled": true,
-        "online_payment_enabled": false,
-        "max_file_size_mb": 25,
-        "allow_notes": true,
         "operating_hours": "Monday – Saturday: 8:00 AM – 7:00 PM",
+        "allow_notes": true,
         "currency": "GHS",
+        "document_retention_days": 14,
+        "payment_provider": "paystack",
+        "online_payment_enabled": false,
         "currency_symbol": "GH₵",
-        "payment_provider": "paystack"
+        "max_file_size_mb": 25,
+        "pay_at_shop_enabled": true
       },
       "id": "tnt-1789642217606-6qev16",
       "created_at": "2026-09-17T10:50:17.606Z",
@@ -313,15 +313,15 @@
       "status": "active",
       "plan_id": "free",
       "settings": {
-        "payment_provider": "paystack",
-        "document_retention_days": 14,
-        "currency_symbol": "GH₵",
-        "currency": "GHS",
-        "operating_hours": "Monday – Saturday: 8:00 AM – 7:00 PM",
-        "pay_at_shop_enabled": true,
         "max_file_size_mb": 25,
-        "online_payment_enabled": false,
-        "allow_notes": true
+        "document_retention_days": 14,
+        "operating_hours": "Monday – Saturday: 8:00 AM – 7:00 PM",
+        "allow_notes": true,
+        "pay_at_shop_enabled": true,
+        "currency_symbol": "GH₵",
+        "payment_provider": "paystack",
+        "currency": "GHS",
+        "online_payment_enabled": false
       },
       "id": "tnt-1789642260436-7mclu4",
       "created_at": "2026-09-17T10:51:00.436Z",
@@ -340,15 +340,15 @@
       "status": "active",
       "plan_id": "free",
       "settings": {
-        "allow_notes": true,
-        "currency_symbol": "GH₵",
-        "operating_hours": "Monday – Saturday: 8:00 AM – 7:00 PM",
-        "online_payment_enabled": false,
-        "currency": "GHS",
-        "payment_provider": "paystack",
-        "document_retention_days": 14,
         "max_file_size_mb": 25,
-        "pay_at_shop_enabled": true
+        "document_retention_days": 14,
+        "operating_hours": "Monday – Saturday: 8:00 AM – 7:00 PM",
+        "pay_at_shop_enabled": true,
+        "payment_provider": "paystack",
+        "online_payment_enabled": false,
+        "allow_notes": true,
+        "currency": "GHS",
+        "currency_symbol": "GH₵"
       },
       "id": "tnt-1789644621473-lxd4xh",
       "created_at": "2026-09-17T11:30:21.473Z",
@@ -367,15 +367,15 @@
       "status": "active",
       "plan_id": "free",
       "settings": {
-        "max_file_size_mb": 25,
         "currency_symbol": "GH₵",
-        "currency": "GHS",
         "allow_notes": true,
-        "operating_hours": "Monday – Saturday: 8:00 AM – 7:00 PM",
         "pay_at_shop_enabled": true,
-        "payment_provider": "paystack",
         "online_payment_enabled": false,
-        "document_retention_days": 14
+        "currency": "GHS",
+        "payment_provider": "paystack",
+        "operating_hours": "Monday – Saturday: 8:00 AM – 7:00 PM",
+        "document_retention_days": 14,
+        "max_file_size_mb": 25
       },
       "id": "tnt-1789644623673-b2ehai",
       "created_at": "2026-09-17T11:30:23.673Z",
@@ -448,15 +448,15 @@
       "status": "active",
       "plan_id": "free",
       "settings": {
-        "document_retention_days": 14,
-        "max_file_size_mb": 25,
+        "allow_notes": true,
+        "currency_symbol": "GH₵",
         "pay_at_shop_enabled": true,
+        "payment_provider": "paystack",
         "online_payment_enabled": false,
         "currency": "GHS",
         "operating_hours": "Monday – Saturday: 8:00 AM – 7:00 PM",
-        "payment_provider": "paystack",
-        "currency_symbol": "GH₵",
-        "allow_notes": true
+        "max_file_size_mb": 25,
+        "document_retention_days": 14
       },
       "id": "tnt-1789649303001-p9twpk",
       "created_at": "2026-09-17T12:48:23.001Z",
@@ -475,15 +475,15 @@
       "status": "active",
       "plan_id": "free",
       "settings": {
+        "payment_provider": "paystack",
+        "pay_at_shop_enabled": true,
+        "operating_hours": "Mon-Sat 8am-8pm",
+        "document_retention_days": 14,
+        "currency": "GHS",
         "max_file_size_mb": 25,
         "currency_symbol": "GH₵",
-        "operating_hours": "Mon-Sat 8am-8pm",
-        "payment_provider": "paystack",
-        "online_payment_enabled": false,
-        "currency": "GHS",
-        "document_retention_days": 14,
         "allow_notes": true,
-        "pay_at_shop_enabled": true
+        "online_payment_enabled": false
       },
       "id": "tnt-1789681653611-sd6gwa",
       "created_at": "2026-09-17T21:47:33.611Z",
@@ -497,15 +497,15 @@
       "email": "umat12@gmail.com",
       "updated_at": "2026-09-15T22:43:41.873Z",
       "settings": {
-        "currency": "GHS",
-        "pay_at_shop_enabled": true,
-        "payment_provider": "paystack",
-        "online_payment_enabled": false,
-        "operating_hours": "Mon–Sat: 8:00 AM – 7:00 PM",
         "currency_symbol": "GH₵",
         "max_file_size_mb": 25,
-        "allow_notes": true,
-        "document_retention_days": 14
+        "pay_at_shop_enabled": true,
+        "payment_provider": "paystack",
+        "operating_hours": "Mon–Sat: 8:00 AM – 7:00 PM",
+        "currency": "GHS",
+        "document_retention_days": 14,
+        "online_payment_enabled": false,
+        "allow_notes": true
       },
       "logo_url": "https://images.unsplash.com/photo-1562654501-a0ccc0fc3fb1?w=150&auto=format&fit=crop&q=80",
       "id": "tnt-1789512221873-vkilie",
@@ -529,19 +529,46 @@
       "status": "active",
       "plan_id": "free",
       "settings": {
-        "currency": "GHS",
-        "currency_symbol": "GH₵",
-        "operating_hours": "Mon-Sat 8am-7pm",
-        "pay_at_shop_enabled": true,
-        "online_payment_enabled": false,
         "payment_provider": "paystack",
+        "allow_notes": true,
         "document_retention_days": 14,
+        "currency_symbol": "GH₵",
         "max_file_size_mb": 25,
-        "allow_notes": true
+        "online_payment_enabled": false,
+        "pay_at_shop_enabled": true,
+        "operating_hours": "Mon-Sat 8am-7pm",
+        "currency": "GHS"
       },
       "id": "tnt-1789681765348-1hcnud",
       "created_at": "2026-09-17T21:49:25.348Z",
       "updated_at": "2026-09-17T21:49:25.348Z"
+    },
+    {
+      "updated_at": "2026-09-18T10:25:38.971Z",
+      "address": "plot A11",
+      "phone": "0547278442",
+      "created_at": "2026-09-18T10:25:38.971Z",
+      "description": "clean press",
+      "plan_id": "free",
+      "id": "tnt-1789727138971-9ygw43",
+      "slug": "ais",
+      "settings": {
+        "allow_notes": true,
+        "currency_symbol": "GH₵",
+        "max_file_size_mb": 25,
+        "currency": "GHS",
+        "pay_at_shop_enabled": true,
+        "payment_provider": "paystack",
+        "document_retention_days": 14,
+        "operating_hours": "Mon–Sat: 8:00 AM – 7:00 PM",
+        "online_payment_enabled": false
+      },
+      "owner_name": "Mr. Adu",
+      "location": "Sunyani",
+      "email": "adu123@gmail.com",
+      "logo_url": "https://images.unsplash.com/photo-1562654501-a0ccc0fc3fb1?w=150&auto=format&fit=crop&q=80",
+      "name": "AIS",
+      "status": "active"
     }
   ],
   "users": [
@@ -563,11 +590,11 @@
       "role": "owner",
       "name": "Kwame Mensah Senior",
       "email": "bright@printflow.com",
-      "password_hash": "$2b$10$acU9/lNw/vV4xTlkpJGD6OAz4R/mktBuoy8PylROSQUNJQYUEO6Ma",
+      "password_hash": "$2b$10$J0uJKmri7cFKLMi7RrRn7.BYOEN9E.gTdC/VDDLKsfxmjpO5X5.UK",
       "phone": "+233 24 456 7890",
       "status": "active",
       "created_at": "2026-01-10T09:00:00.000Z",
-      "updated_at": "2026-09-12T23:11:32.684Z"
+      "updated_at": "2026-09-18T10:39:08.469Z"
     },
     {
       "id": "usr-bright-staff",
@@ -829,6 +856,42 @@
       "id": "usr-1789681765468-dff6b4",
       "created_at": "2026-09-17T21:49:25.468Z",
       "updated_at": "2026-09-17T21:49:25.468Z"
+    },
+    {
+      "updated_at": "2026-09-18T10:25:39.083Z",
+      "role": "owner",
+      "phone": "0547278442",
+      "name": "Mr. Adu",
+      "tenant_id": "tnt-1789727138971-9ygw43",
+      "status": "active",
+      "password_hash": "$2b$10$pmZT9QJBeeTpQs6y.LqspOlvMNTVdhpKeS5h8sP/9s0UWwSYMU6Sm",
+      "id": "usr-1789727139083-8apyei",
+      "created_at": "2026-09-18T10:25:39.083Z",
+      "email": "adu123@gmail.com"
+    },
+    {
+      "updated_at": "2026-09-18T10:28:46.548Z",
+      "email": "roy123@gmail.com",
+      "password_hash": "$2b$10$ysuGWL.57.J8t2BJQymCYulFP50NPBkRVzt7WVabtM9O6aGMPyjXa",
+      "status": "active",
+      "created_at": "2026-09-18T10:28:46.548Z",
+      "id": "usr-1789727326548-q55lj3",
+      "name": "Brain Roy",
+      "tenant_id": "tnt-1789727138971-9ygw43",
+      "role": "staff",
+      "phone": "0244567890"
+    },
+    {
+      "tenant_id": "tnt-bright-digital",
+      "role": "staff",
+      "name": "Akosua Mensah (Press Operator)",
+      "email": "operator_1789727955820@brightprint.com",
+      "password_hash": "$2b$10$oZIjDEprtrtwyFe0Q.D9ee.t0Hqk4D4voEOERmBZruUZ327Zmzcnu",
+      "phone": "+233 24 999 8877",
+      "status": "active",
+      "id": "usr-1789727956097-bqgz2k",
+      "created_at": "2026-09-18T10:39:16.097Z",
+      "updated_at": "2026-09-18T10:39:16.097Z"
     }
   ],
   "services": [
@@ -1897,6 +1960,138 @@
     }
   ],
   "audit_logs": [
+    {
+      "tenant_id": "tnt-bright-digital",
+      "user_id": "usr-bright-owner",
+      "user_email": "bright@printflow.com",
+      "role": "owner",
+      "action": "STAFF_ACCOUNT_DELETED",
+      "resource_type": "user",
+      "resource_id": "usr-1789727972613-6tl5st",
+      "details": {
+        "email": "operator_1789727972314@brightprint.com",
+        "name": "Akosua Mensah (Press Operator)"
+      },
+      "ip": "127.0.0.1",
+      "id": "log-1789727972949-e9ev87",
+      "created_at": "2026-09-18T10:39:32.949Z"
+    },
+    {
+      "tenant_id": "tnt-bright-digital",
+      "user_id": "usr-1789727972613-6tl5st",
+      "user_email": "operator_1789727972314@brightprint.com",
+      "role": "staff",
+      "action": "USER_LOGIN_SUCCESS",
+      "resource_type": "user",
+      "resource_id": "usr-1789727972613-6tl5st",
+      "ip": "127.0.0.1",
+      "id": "log-1789727972918-44abod",
+      "created_at": "2026-09-18T10:39:32.918Z"
+    },
+    {
+      "tenant_id": "tnt-bright-digital",
+      "user_id": "usr-bright-owner",
+      "user_email": "bright@printflow.com",
+      "role": "owner",
+      "action": "STAFF_ACCOUNT_CREATED",
+      "resource_type": "user",
+      "resource_id": "usr-1789727972613-6tl5st",
+      "details": {
+        "name": "Akosua Mensah (Press Operator)",
+        "email": "operator_1789727972314@brightprint.com"
+      },
+      "ip": "127.0.0.1",
+      "id": "log-1789727972792-p0be3r",
+      "created_at": "2026-09-18T10:39:32.792Z"
+    },
+    {
+      "tenant_id": "tnt-bright-digital",
+      "user_id": "usr-bright-owner",
+      "user_email": "bright@printflow.com",
+      "role": "owner",
+      "action": "USER_LOGIN_SUCCESS",
+      "resource_type": "user",
+      "resource_id": "usr-bright-owner",
+      "ip": "127.0.0.1",
+      "id": "log-1789727972303-xmzrt2",
+      "created_at": "2026-09-18T10:39:32.303Z"
+    },
+    {
+      "tenant_id": "tnt-bright-digital",
+      "user_id": "usr-1789727956097-bqgz2k",
+      "user_email": "operator_1789727955820@brightprint.com",
+      "role": "staff",
+      "action": "USER_LOGIN_SUCCESS",
+      "resource_type": "user",
+      "resource_id": "usr-1789727956097-bqgz2k",
+      "ip": "127.0.0.1",
+      "id": "log-1789727956565-sa0bko",
+      "created_at": "2026-09-18T10:39:16.565Z"
+    },
+    {
+      "tenant_id": "tnt-bright-digital",
+      "user_id": "usr-1789727956097-bqgz2k",
+      "user_email": "operator_1789727955820@brightprint.com",
+      "role": "staff",
+      "action": "USER_LOGIN_SUCCESS",
+      "resource_type": "user",
+      "resource_id": "usr-1789727956097-bqgz2k",
+      "ip": "127.0.0.1",
+      "id": "log-1789727956413-gt9zct",
+      "created_at": "2026-09-18T10:39:16.413Z"
+    },
+    {
+      "tenant_id": "tnt-bright-digital",
+      "user_id": "usr-bright-owner",
+      "user_email": "bright@printflow.com",
+      "role": "owner",
+      "action": "STAFF_ACCOUNT_CREATED",
+      "resource_type": "user",
+      "resource_id": "usr-1789727956097-bqgz2k",
+      "details": {
+        "name": "Akosua Mensah (Press Operator)",
+        "email": "operator_1789727955820@brightprint.com"
+      },
+      "ip": "127.0.0.1",
+      "id": "log-1789727956295-4utses",
+      "created_at": "2026-09-18T10:39:16.295Z"
+    },
+    {
+      "tenant_id": "tnt-bright-digital",
+      "user_id": "usr-bright-owner",
+      "user_email": "bright@printflow.com",
+      "role": "owner",
+      "action": "USER_LOGIN_SUCCESS",
+      "resource_type": "user",
+      "resource_id": "usr-bright-owner",
+      "ip": "127.0.0.1",
+      "id": "log-1789727955797-8hyos6",
+      "created_at": "2026-09-18T10:39:15.797Z"
+    },
+    {
+      "tenant_id": "tnt-bright-digital",
+      "user_id": "usr-bright-owner",
+      "user_email": "bright@printflow.com",
+      "role": "owner",
+      "action": "USER_LOGIN_SUCCESS",
+      "resource_type": "user",
+      "resource_id": "usr-bright-owner",
+      "ip": "127.0.0.1",
+      "id": "log-1789727948623-rpdllm",
+      "created_at": "2026-09-18T10:39:08.623Z"
+    },
+    {
+      "tenant_id": "tnt-bright-digital",
+      "user_id": "usr-bright-owner",
+      "user_email": "bright@printflow.com",
+      "role": "owner",
+      "action": "PASSWORD_RESET_COMPLETED",
+      "resource_type": "user",
+      "resource_id": "usr-bright-owner",
+      "ip": "127.0.0.1",
+      "id": "log-1789727948474-9pxprf",
+      "created_at": "2026-09-18T10:39:08.474Z"
+    },
     {
       "tenant_id": "tnt-1789423875393-fxj7ox",
       "user_id": "usr-1789423875540-t5d14f",

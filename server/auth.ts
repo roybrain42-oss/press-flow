@@ -35,7 +35,7 @@ export function generateToken(user: AuthUser): string {
   );
 }
 
-export function authenticate(req: Request, res: Response, next: NextFunction): void {
+export async function authenticate(req: Request, res: Response, next: NextFunction): Promise<void> {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     res.status(401).json({ error: 'Authentication required. Missing or invalid Bearer token.' });
@@ -45,8 +45,12 @@ export function authenticate(req: Request, res: Response, next: NextFunction): v
   const token = authHeader.split(' ')[1];
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as AuthUser;
-    // Verify user is still active in database
-    const user = db.getUserById(decoded.id);
+    // Verify user is still active in database (check memory, fallback to Firestore)
+    let user = db.getUserById(decoded.id);
+    if (!user) {
+      user = await db.getUserByIdAsync(decoded.id);
+    }
+
     if (!user || user.status !== 'active') {
       res.status(401).json({ error: 'User account is deactivated or not found.' });
       return;

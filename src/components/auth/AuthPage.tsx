@@ -195,7 +195,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({
               <div>
                 <h2 className="text-lg font-bold text-slate-900">Sign in to your press dashboard</h2>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Enter your press credentials to manage incoming jobs, counter queues, and pricing.
+                  Enter your credentials as a Press Owner or Staff Operator to manage incoming jobs, counter queues, and printing.
                 </p>
               </div>
 
@@ -207,7 +207,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({
 
               <form onSubmit={handleLoginSubmit} className="space-y-4 text-xs">
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1.5">Business Email</label>
+                  <label className="block font-bold text-slate-700 mb-1.5">Email Address</label>
                   <div className="relative">
                     <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
                     <input
@@ -215,7 +215,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({
                       required
                       value={loginEmail}
                       onChange={(e) => setLoginEmail(e.target.value)}
-                      placeholder="owner@yourprintingpress.com"
+                      placeholder="owner@press.com or staff@press.com"
                       className="w-full h-10 pl-10 pr-3.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:outline-none text-xs text-slate-800 transition-all"
                     />
                   </div>
@@ -272,6 +272,58 @@ export const AuthPage: React.FC<AuthPageProps> = ({
                   )}
                 </button>
               </form>
+
+              {/* Quick Fill Test Accounts */}
+              <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-2 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-slate-700 text-[11px] uppercase tracking-wider">Quick Fill Test Accounts</span>
+                  <span className="text-[10px] text-slate-400">Click to fill</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLoginEmail('bright@printflow.com');
+                      setLoginPassword('OwnerPassword2026!');
+                    }}
+                    className="p-2 bg-white rounded-xl border border-slate-200 hover:border-blue-300 text-left transition group shadow-xs"
+                  >
+                    <div className="font-bold text-blue-700 text-[11px] flex items-center gap-1 group-hover:underline">
+                      <span className="w-1.5 h-1.5 rounded-full bg-blue-600"></span>
+                      Press Owner
+                    </div>
+                    <div className="text-[10px] text-slate-500 truncate">bright@printflow.com</div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLoginEmail('abena.staff@printflow.com');
+                      setLoginPassword('StaffPassword2026!');
+                    }}
+                    className="p-2 bg-white rounded-xl border border-slate-200 hover:border-indigo-300 text-left transition group shadow-xs"
+                  >
+                    <div className="font-bold text-indigo-700 text-[11px] flex items-center gap-1 group-hover:underline">
+                      <span className="w-1.5 h-1.5 rounded-full bg-indigo-600"></span>
+                      Staff Operator
+                    </div>
+                    <div className="text-[10px] text-slate-500 truncate">abena.staff@printflow.com</div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLoginEmail('admin@printflow.com');
+                      setLoginPassword('AdminPassword2026!');
+                    }}
+                    className="p-2 bg-white rounded-xl border border-slate-200 hover:border-purple-300 text-left transition group shadow-xs"
+                  >
+                    <div className="font-bold text-purple-700 text-[11px] flex items-center gap-1 group-hover:underline">
+                      <span className="w-1.5 h-1.5 rounded-full bg-purple-600"></span>
+                      Super Admin
+                    </div>
+                    <div className="text-[10px] text-slate-500 truncate">admin@printflow.com</div>
+                  </button>
+                </div>
+              </div>
 
               {/* Register Callout */}
               <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">

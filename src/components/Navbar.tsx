@@ -175,7 +175,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   QR Countertop
                 </button>
 
-                {role === 'owner' && (
+                {(role === 'owner' || role === 'super_admin') && (
                   <>
                     <button
                       onClick={() => setDashboardTab('staff')}
@@ -448,7 +448,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 QR Countertop
               </button>
 
-              {role === 'owner' && (
+              {(role === 'owner' || role === 'super_admin') && (
                 <>
                   <button
                     onClick={() => handleNavClick(() => setDashboardTab('staff'))}
