@@ -21,6 +21,7 @@ import {
   deleteDoc,
   collection,
   query,
+  where,
   limit
 } from "firebase/firestore";
 import fs from "fs";
@@ -140,6 +141,48 @@ async function deleteDocFromFirestore(collectionName, docId) {
     return false;
   }
 }
+async function fetchDocFromFirestore(collectionName, docId) {
+  try {
+    const db2 = initServerFirestore();
+    if (!db2) return null;
+    const docRef = doc(db2, collectionName, docId);
+    const snap = await getDoc(docRef);
+    if (snap.exists()) {
+      return snap.data();
+    }
+  } catch (err) {
+    console.error(`[Firebase Server] Error fetching ${collectionName}/${docId}:`, err);
+  }
+  return null;
+}
+async function fetchCollectionFromFirestore(collectionName) {
+  try {
+    const db2 = initServerFirestore();
+    if (!db2) return [];
+    const colRef = collection(db2, collectionName);
+    const snap = await getDocs(colRef);
+    return snap.docs.map((d) => d.data());
+  } catch (err) {
+    console.error(`[Firebase Server] Error fetching collection ${collectionName}:`, err);
+    return [];
+  }
+}
+async function findUserByEmailInFirestore(email) {
+  try {
+    const db2 = initServerFirestore();
+    if (!db2) return null;
+    const usersRef = collection(db2, "users");
+    const cleanEmail = email.toLowerCase().trim();
+    const q = query(usersRef, where("email", "==", cleanEmail), limit(1));
+    const snap = await getDocs(q);
+    if (!snap.empty) {
+      return snap.docs[0].data();
+    }
+  } catch (err) {
+    console.error(`[Firebase Server] Error finding user by email ${email}:`, err);
+  }
+  return null;
+}
 
 // server/db.ts
 var isServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.NETLIFY);
@@ -170,42 +213,43 @@ var DatabaseEngine = class {
     } catch (err) {
       console.warn("[DB] Notice creating data directory:", err);
     }
+    let loadedFromDisk = false;
     if (fs2.existsSync(DB_FILE)) {
       try {
         const raw = fs2.readFileSync(DB_FILE, "utf-8");
         this.data = JSON.parse(raw);
         this.isLoaded = true;
-        console.log(`[DB] Database loaded from ${DB_FILE} with ${this.data.tenants.length} tenants and ${this.data.print_jobs.length} jobs.`);
-        return;
+        loadedFromDisk = true;
+        console.log(`[DB] Database loaded from ${DB_FILE} with ${this.data.tenants.length} tenants and ${this.data.users.length} users.`);
       } catch (err) {
         console.error("[DB] Failed to read database file, attempting fallback:", err);
       }
     }
-    if (isServerless && fs2.existsSync(SEED_FILE)) {
+    if (!loadedFromDisk && isServerless && fs2.existsSync(SEED_FILE)) {
       try {
         const raw = fs2.readFileSync(SEED_FILE, "utf-8");
         this.data = JSON.parse(raw);
         this.isLoaded = true;
+        loadedFromDisk = true;
         this.persist();
-        console.log(`[DB] Loaded bundled seed data into serverless instance with ${this.data.tenants.length} tenants.`);
-        return;
+        console.log(`[DB] Loaded bundled seed data into serverless instance with ${this.data.tenants.length} tenants and ${this.data.users.length} users.`);
       } catch (err) {
         console.error("[DB] Failed to load bundled seed file:", err);
       }
     }
-    this.seedInitialData();
-    this.persist();
-    this.isLoaded = true;
-    if (!isServerless) {
-      setTimeout(async () => {
-        try {
-          initServerFirestore();
-          await this.syncAllToFirestore();
-        } catch (err) {
-          console.warn("[DB] Initial Firestore sync notice:", err);
-        }
-      }, 1500);
+    if (!loadedFromDisk) {
+      this.seedInitialData();
+      this.persist();
+      this.isLoaded = true;
     }
+    setTimeout(async () => {
+      try {
+        initServerFirestore();
+        await this.loadFromFirestore();
+      } catch (err) {
+        console.warn("[DB] Initial Firestore sync notice:", err);
+      }
+    }, 500);
   }
   persist() {
     try {
@@ -975,6 +1019,63 @@ var DatabaseEngine = class {
   getUserByEmail(email) {
     return this.data.users.find((u) => u.email.toLowerCase() === email.toLowerCase());
   }
+  /**
+   * Asynchronously find user by email, falling back to Cloud Firestore on cache miss.
+   * Caches the user and tenant in-memory for instant subsequent requests.
+   */
+  async getUserByEmailAsync(email) {
+    const cleanEmail = email.toLowerCase().trim();
+    let user = this.data.users.find((u) => u.email.toLowerCase() === cleanEmail);
+    if (user && user.password_hash) {
+      return user;
+    }
+    try {
+      const firestoreUser = await findUserByEmailInFirestore(cleanEmail);
+      if (firestoreUser) {
+        const existingIdx = this.data.users.findIndex(
+          (u) => u.id === firestoreUser.id || u.email.toLowerCase() === cleanEmail
+        );
+        if (existingIdx !== -1) {
+          this.data.users[existingIdx] = {
+            ...firestoreUser,
+            password_hash: firestoreUser.password_hash || this.data.users[existingIdx].password_hash
+          };
+          user = this.data.users[existingIdx];
+        } else {
+          this.data.users.push(firestoreUser);
+          user = firestoreUser;
+        }
+        if (user?.tenant_id && !this.getTenantById(user.tenant_id)) {
+          const t = await fetchDocFromFirestore("tenants", user.tenant_id);
+          if (t && !this.data.tenants.some((existing) => existing.id === t.id)) {
+            this.data.tenants.push(t);
+          }
+        }
+        this.persist();
+        return user;
+      }
+    } catch (err) {
+      console.error(`[DB] Error fetching user ${cleanEmail} from Firestore:`, err);
+    }
+    return user;
+  }
+  async getTenantByIdAsync(id) {
+    const local = this.getTenantById(id);
+    if (local) return local;
+    try {
+      const remote = await fetchDocFromFirestore("tenants", id);
+      if (remote) {
+        if (!this.data.tenants.some((t) => t.id === remote.id)) {
+          this.data.tenants.push(remote);
+          this.persist();
+        }
+        return remote;
+      }
+    } catch (err) {
+      console.error(`[DB] Error fetching tenant ${id} from Firestore:`, err);
+    }
+    return void 0;
+  }
   createUser(user) {
     const id = `usr-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
     const now = (/* @__PURE__ */ new Date()).toISOString();
@@ -986,8 +1087,7 @@ var DatabaseEngine = class {
     };
     this.data.users.push(newUser);
     this.persist();
-    const { password_hash, ...safeUser } = newUser;
-    syncDocToFirestore("users", newUser.id, safeUser);
+    syncDocToFirestore("users", newUser.id, newUser);
     return newUser;
   }
   updateUser(id, updates) {
@@ -999,8 +1099,7 @@ var DatabaseEngine = class {
       updated_at: (/* @__PURE__ */ new Date()).toISOString()
     };
     this.persist();
-    const { password_hash, ...safeUser } = this.data.users[idx];
-    syncDocToFirestore("users", id, safeUser);
+    syncDocToFirestore("users", id, this.data.users[idx]);
     return this.data.users[idx];
   }
   deleteUser(id, tenantId) {
@@ -1241,12 +1340,57 @@ var DatabaseEngine = class {
       synced++;
     }
     for (const user of this.data.users) {
-      const { password_hash, ...safeUser } = user;
-      await syncDocToFirestore("users", user.id, safeUser);
+      await syncDocToFirestore("users", user.id, user);
       synced++;
     }
     console.log(`[DB] Successfully synchronized ${synced} documents to Cloud Firestore.`);
     return { success: true, count: synced, timestamp: (/* @__PURE__ */ new Date()).toISOString() };
+  }
+  async loadFromFirestore() {
+    try {
+      console.log("[DB] Loading authoritative state from Cloud Firestore...");
+      const remoteTenants = await fetchCollectionFromFirestore("tenants");
+      const remoteUsers = await fetchCollectionFromFirestore("users");
+      let tenantsAdded = 0;
+      for (const rt of remoteTenants) {
+        const idx = this.data.tenants.findIndex(
+          (t) => t.id === rt.id || t.slug && rt.slug && t.slug.toLowerCase() === rt.slug.toLowerCase()
+        );
+        if (idx === -1) {
+          this.data.tenants.push(rt);
+          tenantsAdded++;
+        } else {
+          this.data.tenants[idx] = { ...this.data.tenants[idx], ...rt };
+        }
+      }
+      let usersAdded = 0;
+      for (const ru of remoteUsers) {
+        const idx = this.data.users.findIndex(
+          (u) => u.id === ru.id || u.email && ru.email && u.email.toLowerCase() === ru.email.toLowerCase()
+        );
+        if (idx === -1) {
+          this.data.users.push(ru);
+          usersAdded++;
+        } else {
+          const localHash = this.data.users[idx].password_hash;
+          const remoteHash = ru.password_hash;
+          this.data.users[idx] = {
+            ...this.data.users[idx],
+            ...ru,
+            password_hash: remoteHash || localHash
+          };
+          if (!remoteHash && localHash) {
+            syncDocToFirestore("users", ru.id, this.data.users[idx]);
+          }
+        }
+      }
+      this.persist();
+      console.log(
+        `[DB] Firestore sync complete: ${remoteTenants.length} tenants (${tenantsAdded} new), ${remoteUsers.length} users (${usersAdded} new).`
+      );
+    } catch (err) {
+      console.warn("[DB] Could not load from Firestore:", err);
+    }
   }
 };
 var db = new DatabaseEngine();
@@ -1358,70 +1502,149 @@ function verifyTenant(req, res, next) {
 
 // server/routes/authRoutes.ts
 var router = Router();
-router.post("/login", (req, res) => {
-  const { email, password } = req.body;
-  if (!email || !password) {
-    res.status(400).json({ error: "Email and password are required." });
-    return;
-  }
-  const cleanEmail = email.toLowerCase().trim();
-  const user = db.getUserByEmail(cleanEmail);
-  if (!user) {
-    res.status(401).json({ error: "Invalid email or password." });
-    return;
-  }
-  if (user.status !== "active") {
-    res.status(403).json({ error: "Your account is suspended. Please contact platform support." });
-    return;
-  }
-  const isPasswordValid = bcrypt2.compareSync(password, user.password_hash);
-  if (!isPasswordValid) {
-    res.status(401).json({ error: "Invalid email or password." });
-    return;
-  }
-  let tenant = null;
-  if (user.tenant_id) {
-    tenant = db.getTenantById(user.tenant_id);
-    if (!tenant) {
-      res.status(404).json({ error: "Assigned printing press not found." });
+router.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body || {};
+    if (!email || !password) {
+      res.status(400).json({ error: "Email and password are required." });
       return;
     }
-    if (tenant.status === "suspended") {
-      res.status(403).json({ error: "This printing press has been suspended by the platform administrator." });
+    const cleanEmail = String(email).toLowerCase().trim();
+    const user = await db.getUserByEmailAsync(cleanEmail);
+    if (!user) {
+      res.status(401).json({ error: "Invalid email or password. Please verify your credentials or register your printing press." });
       return;
     }
-  }
-  const token = generateToken({
-    id: user.id,
-    tenant_id: user.tenant_id,
-    role: user.role,
-    name: user.name,
-    email: user.email
-  });
-  db.addAuditLog({
-    tenant_id: user.tenant_id,
-    user_id: user.id,
-    user_email: user.email,
-    role: user.role,
-    action: "USER_LOGIN_SUCCESS",
-    resource_type: "user",
-    resource_id: user.id,
-    ip: req.ip
-  });
-  res.json({
-    token,
-    user: {
+    if (user.status !== "active") {
+      res.status(403).json({ error: "Your account is suspended. Please contact platform support." });
+      return;
+    }
+    if (!user.password_hash) {
+      console.warn(`[Auth] User ${cleanEmail} lacks password_hash in store.`);
+      res.status(401).json({ error: "Account credentials need updating. Please use Forgot Password or reset your password." });
+      return;
+    }
+    let isPasswordValid = false;
+    try {
+      isPasswordValid = bcrypt2.compareSync(String(password), user.password_hash);
+    } catch (bcryptErr) {
+      console.error("[Auth] Bcrypt compare error:", bcryptErr);
+      isPasswordValid = false;
+    }
+    if (!isPasswordValid) {
+      res.status(401).json({ error: "Invalid email or password. Please check your credentials." });
+      return;
+    }
+    let tenant = null;
+    if (user.tenant_id) {
+      tenant = await db.getTenantByIdAsync(user.tenant_id);
+      if (!tenant) {
+        tenant = db.getTenants().find((t) => t.email?.toLowerCase() === cleanEmail) || null;
+      }
+      if (!tenant && user.role === "owner") {
+        console.warn(`[Auth] Auto-recovering missing tenant for owner ${cleanEmail}`);
+        tenant = db.createTenant({
+          name: user.name ? `${user.name}'s Printing Press` : "PrintFlow Press",
+          slug: `press-${Date.now().toString(36)}`,
+          owner_name: user.name || "Press Owner",
+          email: user.email,
+          phone: user.phone || "",
+          location: "Ghana",
+          address: "",
+          description: "Commercial digital print & copy center",
+          logo_url: "https://images.unsplash.com/photo-1562654501-a0ccc0fc3fb1?w=150&auto=format&fit=crop&q=80",
+          status: "active",
+          plan_id: "free",
+          settings: {
+            currency: "GHS",
+            currency_symbol: "GH\u20B5",
+            operating_hours: "Mon\u2013Sat: 8:00 AM \u2013 7:00 PM",
+            pay_at_shop_enabled: true,
+            online_payment_enabled: false,
+            payment_provider: "paystack",
+            document_retention_days: 14,
+            max_file_size_mb: 25,
+            allow_notes: true
+          }
+        });
+        db.updateUser(user.id, { tenant_id: tenant.id });
+        user.tenant_id = tenant.id;
+      }
+      if (tenant && tenant.status === "suspended") {
+        res.status(403).json({ error: "This printing press has been suspended by the platform administrator." });
+        return;
+      }
+    }
+    const token = generateToken({
       id: user.id,
-      name: user.name,
-      email: user.email,
+      tenant_id: user.tenant_id,
       role: user.role,
-      phone: user.phone,
-      tenant_id: user.tenant_id
-    },
-    tenant
-  });
+      name: user.name,
+      email: user.email
+    });
+    db.addAuditLog({
+      tenant_id: user.tenant_id,
+      user_id: user.id,
+      user_email: user.email,
+      role: user.role,
+      action: "USER_LOGIN_SUCCESS",
+      resource_type: "user",
+      resource_id: user.id,
+      ip: req.ip
+    });
+    res.json({
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        phone: user.phone,
+        tenant_id: user.tenant_id
+      },
+      tenant
+    });
+  } catch (err) {
+    console.error("[Auth Error] Error during login:", err);
+    res.status(500).json({ error: err?.message || "Login failed due to a server error. Please try again." });
+  }
 });
-router.post("/register-press", (req, res) => {
+router.post("/reset-password", async (req, res) => {
+  try {
+    const { email, new_password } = req.body || {};
+    if (!email || !new_password) {
+      res.status(400).json({ error: "Email and new password are required." });
+      return;
+    }
+    const cleanEmail = String(email).toLowerCase().trim();
+    const user = await db.getUserByEmailAsync(cleanEmail);
+    if (!user) {
+      res.status(404).json({ error: "No user account found with this email address." });
+      return;
+    }
+    if (String(new_password).length < 6) {
+      res.status(400).json({ error: "New password must be at least 6 characters long." });
+      return;
+    }
+    const passwordHash = bcrypt2.hashSync(String(new_password), 10);
+    db.updateUser(user.id, { password_hash: passwordHash });
+    db.addAuditLog({
+      tenant_id: user.tenant_id,
+      user_id: user.id,
+      user_email: user.email,
+      role: user.role,
+      action: "PASSWORD_RESET_COMPLETED",
+      resource_type: "user",
+      resource_id: user.id,
+      ip: req.ip
+    });
+    res.json({ message: "Password updated successfully. You can now log in with your credentials." });
+  } catch (err) {
+    console.error("[Auth Error] Error resetting password:", err);
+    res.status(500).json({ error: err?.message || "Failed to update password." });
+  }
+});
+router.post("/register-press", async (req, res) => {
   try {
     const {
       business_name,
@@ -1443,7 +1666,7 @@ router.post("/register-press", (req, res) => {
       res.status(400).json({ error: "Please enter a valid business email address." });
       return;
     }
-    const existingUser = db.getUserByEmail(cleanEmail);
+    const existingUser = await db.getUserByEmailAsync(cleanEmail);
     if (existingUser) {
       res.status(409).json({ error: "A user account with this email already exists. Please log in or use another email." });
       return;

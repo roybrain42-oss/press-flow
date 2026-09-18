@@ -34,7 +34,7 @@ export const AuthPage: React.FC<AuthPageProps> = ({
   initialMode = 'login',
   onLoginSuccess,
 }) => {
-  const { login, register } = useAuth();
+  const { login, register, resetPassword } = useAuth();
   const [activeTab, setActiveTab] = useState<'login' | 'signup'>(initialMode);
 
   // Login form state
@@ -43,6 +43,13 @@ export const AuthPage: React.FC<AuthPageProps> = ({
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [isLoginSubmitting, setIsLoginSubmitting] = useState(false);
   const [loginError, setLoginError] = useState<string | null>(null);
+
+  // Reset password state
+  const [showResetModal, setShowResetModal] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetNewPassword, setResetNewPassword] = useState('');
+  const [isResetSubmitting, setIsResetSubmitting] = useState(false);
+  const [resetStatus, setResetStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   // Registration form state
   const [businessName, setBusinessName] = useState('');
@@ -63,9 +70,9 @@ export const AuthPage: React.FC<AuthPageProps> = ({
     setIsLoginSubmitting(true);
     setLoginError(null);
     try {
-      await login(loginEmail, loginPassword);
-      // Determine destination role based on test email or generic
-      const role = loginEmail.includes('admin') ? 'super_admin' : 'owner';
+      const cleanEmail = loginEmail.trim();
+      const res = await login(cleanEmail, loginPassword);
+      const role = res?.user?.role || (cleanEmail.includes('admin') ? 'super_admin' : 'owner');
       onLoginSuccess(role);
     } catch (err: any) {
       setLoginError(err.message || 'Login failed. Please verify your credentials.');
@@ -74,22 +81,45 @@ export const AuthPage: React.FC<AuthPageProps> = ({
     }
   };
 
+  const handleResetSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsResetSubmitting(true);
+    setResetStatus(null);
+    try {
+      const cleanEmail = resetEmail.trim();
+      const res = await resetPassword(cleanEmail, resetNewPassword);
+      setResetStatus({ type: 'success', message: res.message || 'Password updated successfully!' });
+      setLoginEmail(cleanEmail);
+      setLoginPassword(resetNewPassword);
+      setTimeout(() => {
+        setShowResetModal(false);
+        setResetStatus(null);
+      }, 2000);
+    } catch (err: any) {
+      setResetStatus({ type: 'error', message: err.message || 'Failed to update password.' });
+    } finally {
+      setIsResetSubmitting(false);
+    }
+  };
+
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsRegSubmitting(true);
     setRegError(null);
     try {
-      const res = await register({
-        business_name: businessName,
-        owner_name: ownerName,
-        email: regEmail,
+      const cleanEmail = regEmail.trim();
+      await register({
+        business_name: businessName.trim(),
+        owner_name: ownerName.trim(),
+        email: cleanEmail,
         password: regPassword,
-        phone,
-        location,
-        address,
-        operating_hours: operatingHours,
-        description: description || 'Professional commercial digital print and copying services.',
+        phone: phone.trim(),
+        location: location.trim(),
+        address: address.trim(),
+        operating_hours: operatingHours.trim(),
+        description: description.trim() || 'Professional commercial digital print and copying services.',
       });
+      setLoginEmail(cleanEmail);
       onLoginSuccess('owner');
     } catch (err: any) {
       setRegError(err.message || 'Registration failed. Please check your information.');
@@ -194,6 +224,18 @@ export const AuthPage: React.FC<AuthPageProps> = ({
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
                     <label className="font-bold text-slate-700">Password</label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setResetEmail(loginEmail);
+                        setResetNewPassword('');
+                        setResetStatus(null);
+                        setShowResetModal(true);
+                      }}
+                      className="text-[11px] font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+                    >
+                      Forgot password?
+                    </button>
                   </div>
                   <div className="relative">
                     <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
@@ -468,6 +510,88 @@ export const AuthPage: React.FC<AuthPageProps> = ({
           </p>
         </div>
       </div>
+
+      {/* Reset Password Modal */}
+      {showResetModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-md w-full p-6 space-y-5 animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                  <Lock className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">Reset Press Credentials</h3>
+                  <p className="text-xs text-slate-500">Update your password to access your dashboard</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowResetModal(false)}
+                className="w-7 h-7 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center text-sm font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            {resetStatus && (
+              <div
+                className={`p-3 rounded-xl text-xs font-medium ${
+                  resetStatus.type === 'success'
+                    ? 'bg-emerald-50 border border-emerald-200 text-emerald-800'
+                    : 'bg-rose-50 border border-rose-200 text-rose-700'
+                }`}
+              >
+                {resetStatus.message}
+              </div>
+            )}
+
+            <form onSubmit={handleResetSubmit} className="space-y-4 text-xs">
+              <div>
+                <label className="block font-bold text-slate-700 mb-1.5">Registered Email Address</label>
+                <input
+                  type="email"
+                  required
+                  value={resetEmail}
+                  onChange={(e) => setResetEmail(e.target.value)}
+                  placeholder="owner@yourprintingpress.com"
+                  className="w-full h-10 px-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:outline-none text-xs text-slate-800"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-slate-700 mb-1.5">New Password (min. 6 characters)</label>
+                <input
+                  type="password"
+                  required
+                  minLength={6}
+                  value={resetNewPassword}
+                  onChange={(e) => setResetNewPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full h-10 px-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 focus:outline-none text-xs text-slate-800"
+                />
+              </div>
+
+              <div className="flex gap-2.5 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowResetModal(false)}
+                  className="flex-1 py-2.5 px-4 rounded-xl border border-slate-200 text-slate-700 font-bold hover:bg-slate-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isResetSubmitting}
+                  className="flex-1 py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold disabled:opacity-50 transition-colors"
+                >
+                  {isResetSubmitting ? 'Updating...' : 'Set New Password'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

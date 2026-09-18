@@ -6,6 +6,9 @@ import {
   checkFirestoreHealth,
   syncDocToFirestore,
   deleteDocFromFirestore,
+  fetchDocFromFirestore,
+  fetchCollectionFromFirestore,
+  findUserByEmailInFirestore,
 } from './firebase';
 
 // Types
@@ -224,49 +227,51 @@ class DatabaseEngine {
       console.warn('[DB] Notice creating data directory:', err);
     }
 
+    let loadedFromDisk = false;
+
     // 1. If DB_FILE exists (/tmp/data/printflow.json or local data/printflow.json)
     if (fs.existsSync(DB_FILE)) {
       try {
         const raw = fs.readFileSync(DB_FILE, 'utf-8');
         this.data = JSON.parse(raw);
         this.isLoaded = true;
-        console.log(`[DB] Database loaded from ${DB_FILE} with ${this.data.tenants.length} tenants and ${this.data.print_jobs.length} jobs.`);
-        return;
+        loadedFromDisk = true;
+        console.log(`[DB] Database loaded from ${DB_FILE} with ${this.data.tenants.length} tenants and ${this.data.users.length} users.`);
       } catch (err) {
         console.error('[DB] Failed to read database file, attempting fallback:', err);
       }
     }
 
     // 2. In serverless, if /tmp has no file yet, copy from bundled seed file
-    if (isServerless && fs.existsSync(SEED_FILE)) {
+    if (!loadedFromDisk && isServerless && fs.existsSync(SEED_FILE)) {
       try {
         const raw = fs.readFileSync(SEED_FILE, 'utf-8');
         this.data = JSON.parse(raw);
         this.isLoaded = true;
+        loadedFromDisk = true;
         this.persist();
-        console.log(`[DB] Loaded bundled seed data into serverless instance with ${this.data.tenants.length} tenants.`);
-        return;
+        console.log(`[DB] Loaded bundled seed data into serverless instance with ${this.data.tenants.length} tenants and ${this.data.users.length} users.`);
       } catch (err) {
         console.error('[DB] Failed to load bundled seed file:', err);
       }
     }
 
-    // 3. Fallback: Seed initial data
-    this.seedInitialData();
-    this.persist();
-    this.isLoaded = true;
-
-    if (!isServerless) {
-      // Connect to Cloud Firestore & sync records in background (for long-lived servers)
-      setTimeout(async () => {
-        try {
-          initServerFirestore();
-          await this.syncAllToFirestore();
-        } catch (err) {
-          console.warn('[DB] Initial Firestore sync notice:', err);
-        }
-      }, 1500);
+    // 3. Fallback: Seed initial data if nothing loaded yet
+    if (!loadedFromDisk) {
+      this.seedInitialData();
+      this.persist();
+      this.isLoaded = true;
     }
+
+    // 4. Background synchronize with Cloud Firestore
+    setTimeout(async () => {
+      try {
+        initServerFirestore();
+        await this.loadFromFirestore();
+      } catch (err) {
+        console.warn('[DB] Initial Firestore sync notice:', err);
+      }
+    }, 500);
   }
 
   private persist() {
@@ -1080,6 +1085,73 @@ class DatabaseEngine {
     return this.data.users.find((u) => u.email.toLowerCase() === email.toLowerCase());
   }
 
+  /**
+   * Asynchronously find user by email, falling back to Cloud Firestore on cache miss.
+   * Caches the user and tenant in-memory for instant subsequent requests.
+   */
+  public async getUserByEmailAsync(email: string): Promise<User | undefined> {
+    const cleanEmail = email.toLowerCase().trim();
+    // 1. Check in-memory first
+    let user = this.data.users.find((u) => u.email.toLowerCase() === cleanEmail);
+    if (user && user.password_hash) {
+      return user;
+    }
+
+    // 2. Check Firestore if not found or if local record was missing password_hash
+    try {
+      const firestoreUser = await findUserByEmailInFirestore(cleanEmail);
+      if (firestoreUser) {
+        const existingIdx = this.data.users.findIndex(
+          (u) => u.id === firestoreUser.id || u.email.toLowerCase() === cleanEmail
+        );
+        if (existingIdx !== -1) {
+          this.data.users[existingIdx] = {
+            ...firestoreUser,
+            password_hash: firestoreUser.password_hash || this.data.users[existingIdx].password_hash,
+          };
+          user = this.data.users[existingIdx];
+        } else {
+          this.data.users.push(firestoreUser);
+          user = firestoreUser;
+        }
+
+        // Cache associated tenant if not loaded
+        if (user?.tenant_id && !this.getTenantById(user.tenant_id)) {
+          const t = await fetchDocFromFirestore<Tenant>('tenants', user.tenant_id);
+          if (t && !this.data.tenants.some((existing) => existing.id === t.id)) {
+            this.data.tenants.push(t);
+          }
+        }
+
+        this.persist();
+        return user;
+      }
+    } catch (err) {
+      console.error(`[DB] Error fetching user ${cleanEmail} from Firestore:`, err);
+    }
+
+    return user;
+  }
+
+  public async getTenantByIdAsync(id: string): Promise<Tenant | undefined> {
+    const local = this.getTenantById(id);
+    if (local) return local;
+
+    try {
+      const remote = await fetchDocFromFirestore<Tenant>('tenants', id);
+      if (remote) {
+        if (!this.data.tenants.some((t) => t.id === remote.id)) {
+          this.data.tenants.push(remote);
+          this.persist();
+        }
+        return remote;
+      }
+    } catch (err) {
+      console.error(`[DB] Error fetching tenant ${id} from Firestore:`, err);
+    }
+    return undefined;
+  }
+
   public createUser(user: Omit<User, 'id' | 'created_at' | 'updated_at'>): User {
     const id = `usr-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`;
     const now = new Date().toISOString();
@@ -1091,8 +1163,8 @@ class DatabaseEngine {
     };
     this.data.users.push(newUser);
     this.persist();
-    const { password_hash, ...safeUser } = newUser;
-    syncDocToFirestore('users', newUser.id, safeUser);
+    // Persist to Cloud Firestore WITH password_hash so credentials survive cold starts
+    syncDocToFirestore('users', newUser.id, newUser);
     return newUser;
   }
 
@@ -1105,8 +1177,7 @@ class DatabaseEngine {
       updated_at: new Date().toISOString(),
     };
     this.persist();
-    const { password_hash, ...safeUser } = this.data.users[idx];
-    syncDocToFirestore('users', id, safeUser);
+    syncDocToFirestore('users', id, this.data.users[idx]);
     return this.data.users[idx];
   }
 
@@ -1381,13 +1452,65 @@ class DatabaseEngine {
       synced++;
     }
     for (const user of this.data.users) {
-      const { password_hash, ...safeUser } = user;
-      await syncDocToFirestore('users', user.id, safeUser);
+      // Sync users with password_hash so authentication is persistent
+      await syncDocToFirestore('users', user.id, user);
       synced++;
     }
 
     console.log(`[DB] Successfully synchronized ${synced} documents to Cloud Firestore.`);
     return { success: true, count: synced, timestamp: new Date().toISOString() };
+  }
+
+  public async loadFromFirestore() {
+    try {
+      console.log('[DB] Loading authoritative state from Cloud Firestore...');
+      const remoteTenants = await fetchCollectionFromFirestore<Tenant>('tenants');
+      const remoteUsers = await fetchCollectionFromFirestore<User>('users');
+
+      let tenantsAdded = 0;
+      for (const rt of remoteTenants) {
+        const idx = this.data.tenants.findIndex(
+          (t) => t.id === rt.id || (t.slug && rt.slug && t.slug.toLowerCase() === rt.slug.toLowerCase())
+        );
+        if (idx === -1) {
+          this.data.tenants.push(rt);
+          tenantsAdded++;
+        } else {
+          this.data.tenants[idx] = { ...this.data.tenants[idx], ...rt };
+        }
+      }
+
+      let usersAdded = 0;
+      for (const ru of remoteUsers) {
+        const idx = this.data.users.findIndex(
+          (u) => u.id === ru.id || (u.email && ru.email && u.email.toLowerCase() === ru.email.toLowerCase())
+        );
+        if (idx === -1) {
+          this.data.users.push(ru);
+          usersAdded++;
+        } else {
+          // Preserve local password_hash if remote document was missing it
+          const localHash = this.data.users[idx].password_hash;
+          const remoteHash = ru.password_hash;
+          this.data.users[idx] = {
+            ...this.data.users[idx],
+            ...ru,
+            password_hash: remoteHash || localHash,
+          };
+          // If remote was missing hash but local has it, restore it to Firestore immediately
+          if (!remoteHash && localHash) {
+            syncDocToFirestore('users', ru.id, this.data.users[idx]);
+          }
+        }
+      }
+
+      this.persist();
+      console.log(
+        `[DB] Firestore sync complete: ${remoteTenants.length} tenants (${tenantsAdded} new), ${remoteUsers.length} users (${usersAdded} new).`
+      );
+    } catch (err) {
+      console.warn('[DB] Could not load from Firestore:', err);
+    }
   }
 }
 

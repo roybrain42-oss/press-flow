@@ -99,6 +99,15 @@ export const api = {
     return handleResponse(res);
   },
 
+  async resetPassword(email: string, new_password: string): Promise<{ message: string }> {
+    const res = await fetch(`${API_BASE}/auth/reset-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, new_password }),
+    });
+    return handleResponse(res);
+  },
+
   async registerPress(data: {
     business_name: string;
     owner_name: string;

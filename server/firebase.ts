@@ -8,6 +8,7 @@ import {
   deleteDoc,
   collection,
   query,
+  where,
   limit,
   Firestore,
 } from 'firebase/firestore';
@@ -179,4 +180,24 @@ export async function fetchCollectionFromFirestore<T = any>(collectionName: stri
     console.error(`[Firebase Server] Error fetching collection ${collectionName}:`, err);
     return [];
   }
+}
+
+/**
+ * Direct lookup of user by email in Firestore
+ */
+export async function findUserByEmailInFirestore(email: string): Promise<any | null> {
+  try {
+    const db = initServerFirestore();
+    if (!db) return null;
+    const usersRef = collection(db, 'users');
+    const cleanEmail = email.toLowerCase().trim();
+    const q = query(usersRef, where('email', '==', cleanEmail), limit(1));
+    const snap = await getDocs(q);
+    if (!snap.empty) {
+      return snap.docs[0].data();
+    }
+  } catch (err) {
+    console.error(`[Firebase Server] Error finding user by email ${email}:`, err);
+  }
+  return null;
 }

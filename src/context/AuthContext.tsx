@@ -8,7 +8,8 @@ interface AuthContextType {
   role: UserRole | null;
   token: string | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<{ token: string; user: User; tenant: Tenant | null }>;
+  resetPassword: (email: string, new_password: string) => Promise<{ message: string }>;
   register: (data: {
     business_name: string;
     owner_name: string;
@@ -78,7 +79,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      const res = await api.login(email, password);
+      const res = await api.login(email.trim(), password);
       localStorage.setItem('printflow_token', res.token);
       setToken(res.token);
       setUser(res.user);
@@ -86,9 +87,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (res.tenant?.slug) {
         setSelectedPressSlug(res.tenant.slug);
       }
+      return res;
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const resetPassword = async (email: string, new_password: string) => {
+    return await api.resetPassword(email.trim(), new_password);
   };
 
   const register = async (data: {
@@ -197,6 +203,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         token,
         isLoading,
         login,
+        resetPassword,
         register,
         loginWithSession,
         logout,

@@ -6,85 +6,177 @@ import { generateToken, authenticate } from '../auth';
 const router = Router();
 
 // POST /api/auth/login
-router.post('/login', (req: Request, res: Response) => {
-  const { email, password } = req.body;
+router.post('/login', async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body || {};
 
-  if (!email || !password) {
-    res.status(400).json({ error: 'Email and password are required.' });
-    return;
-  }
-
-  const cleanEmail = email.toLowerCase().trim();
-  const user = db.getUserByEmail(cleanEmail);
-
-  if (!user) {
-    res.status(401).json({ error: 'Invalid email or password.' });
-    return;
-  }
-
-  if (user.status !== 'active') {
-    res.status(403).json({ error: 'Your account is suspended. Please contact platform support.' });
-    return;
-  }
-
-  const isPasswordValid = bcrypt.compareSync(password, user.password_hash);
-
-  if (!isPasswordValid) {
-    res.status(401).json({ error: 'Invalid email or password.' });
-    return;
-  }
-
-  // If user is owner or staff, check tenant status
-  let tenant = null;
-  if (user.tenant_id) {
-    tenant = db.getTenantById(user.tenant_id);
-    if (!tenant) {
-      res.status(404).json({ error: 'Assigned printing press not found.' });
+    if (!email || !password) {
+      res.status(400).json({ error: 'Email and password are required.' });
       return;
     }
-    if (tenant.status === 'suspended') {
-      res.status(403).json({ error: 'This printing press has been suspended by the platform administrator.' });
+
+    const cleanEmail = String(email).toLowerCase().trim();
+    // Look up via getUserByEmailAsync so we check memory AND Firestore
+    const user = await db.getUserByEmailAsync(cleanEmail);
+
+    if (!user) {
+      res.status(401).json({ error: 'Invalid email or password. Please verify your credentials or register your printing press.' });
       return;
     }
-  }
 
-  const token = generateToken({
-    id: user.id,
-    tenant_id: user.tenant_id,
-    role: user.role,
-    name: user.name,
-    email: user.email,
-  });
+    if (user.status !== 'active') {
+      res.status(403).json({ error: 'Your account is suspended. Please contact platform support.' });
+      return;
+    }
 
-  // Log successful login
-  db.addAuditLog({
-    tenant_id: user.tenant_id,
-    user_id: user.id,
-    user_email: user.email,
-    role: user.role,
-    action: 'USER_LOGIN_SUCCESS',
-    resource_type: 'user',
-    resource_id: user.id,
-    ip: req.ip,
-  });
+    if (!user.password_hash) {
+      console.warn(`[Auth] User ${cleanEmail} lacks password_hash in store.`);
+      res.status(401).json({ error: 'Account credentials need updating. Please use Forgot Password or reset your password.' });
+      return;
+    }
 
-  res.json({
-    token,
-    user: {
+    let isPasswordValid = false;
+    try {
+      isPasswordValid = bcrypt.compareSync(String(password), user.password_hash);
+    } catch (bcryptErr) {
+      console.error('[Auth] Bcrypt compare error:', bcryptErr);
+      isPasswordValid = false;
+    }
+
+    if (!isPasswordValid) {
+      res.status(401).json({ error: 'Invalid email or password. Please check your credentials.' });
+      return;
+    }
+
+    // If user is owner or staff, check tenant status
+    let tenant = null;
+    if (user.tenant_id) {
+      tenant = await db.getTenantByIdAsync(user.tenant_id);
+      if (!tenant) {
+        // Fallback: check if tenant exists by owner email
+        tenant = db.getTenants().find((t) => t.email?.toLowerCase() === cleanEmail) || null;
+      }
+
+      // Auto-recovery: If owner tenant was deleted or missing, rebuild an active tenant record so owner is NEVER locked out!
+      if (!tenant && user.role === 'owner') {
+        console.warn(`[Auth] Auto-recovering missing tenant for owner ${cleanEmail}`);
+        tenant = db.createTenant({
+          name: user.name ? `${user.name}'s Printing Press` : 'PrintFlow Press',
+          slug: `press-${Date.now().toString(36)}`,
+          owner_name: user.name || 'Press Owner',
+          email: user.email,
+          phone: user.phone || '',
+          location: 'Ghana',
+          address: '',
+          description: 'Commercial digital print & copy center',
+          logo_url: 'https://images.unsplash.com/photo-1562654501-a0ccc0fc3fb1?w=150&auto=format&fit=crop&q=80',
+          status: 'active',
+          plan_id: 'free',
+          settings: {
+            currency: 'GHS',
+            currency_symbol: 'GH₵',
+            operating_hours: 'Mon–Sat: 8:00 AM – 7:00 PM',
+            pay_at_shop_enabled: true,
+            online_payment_enabled: false,
+            payment_provider: 'paystack',
+            document_retention_days: 14,
+            max_file_size_mb: 25,
+            allow_notes: true,
+          },
+        });
+        db.updateUser(user.id, { tenant_id: tenant.id });
+        user.tenant_id = tenant.id;
+      }
+
+      if (tenant && tenant.status === 'suspended') {
+        res.status(403).json({ error: 'This printing press has been suspended by the platform administrator.' });
+        return;
+      }
+    }
+
+    const token = generateToken({
       id: user.id,
+      tenant_id: user.tenant_id,
+      role: user.role,
       name: user.name,
       email: user.email,
-      role: user.role,
-      phone: user.phone,
+    });
+
+    // Log successful login
+    db.addAuditLog({
       tenant_id: user.tenant_id,
-    },
-    tenant,
-  });
+      user_id: user.id,
+      user_email: user.email,
+      role: user.role,
+      action: 'USER_LOGIN_SUCCESS',
+      resource_type: 'user',
+      resource_id: user.id,
+      ip: req.ip,
+    });
+
+    res.json({
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        phone: user.phone,
+        tenant_id: user.tenant_id,
+      },
+      tenant,
+    });
+  } catch (err: any) {
+    console.error('[Auth Error] Error during login:', err);
+    res.status(500).json({ error: err?.message || 'Login failed due to a server error. Please try again.' });
+  }
+});
+
+// POST /api/auth/reset-password
+router.post('/reset-password', async (req: Request, res: Response) => {
+  try {
+    const { email, new_password } = req.body || {};
+    if (!email || !new_password) {
+      res.status(400).json({ error: 'Email and new password are required.' });
+      return;
+    }
+
+    const cleanEmail = String(email).toLowerCase().trim();
+    const user = await db.getUserByEmailAsync(cleanEmail);
+    if (!user) {
+      res.status(404).json({ error: 'No user account found with this email address.' });
+      return;
+    }
+
+    if (String(new_password).length < 6) {
+      res.status(400).json({ error: 'New password must be at least 6 characters long.' });
+      return;
+    }
+
+    const passwordHash = bcrypt.hashSync(String(new_password), 10);
+    db.updateUser(user.id, { password_hash: passwordHash });
+
+    db.addAuditLog({
+      tenant_id: user.tenant_id,
+      user_id: user.id,
+      user_email: user.email,
+      role: user.role,
+      action: 'PASSWORD_RESET_COMPLETED',
+      resource_type: 'user',
+      resource_id: user.id,
+      ip: req.ip,
+    });
+
+    res.json({ message: 'Password updated successfully. You can now log in with your credentials.' });
+  } catch (err: any) {
+    console.error('[Auth Error] Error resetting password:', err);
+    res.status(500).json({ error: err?.message || 'Failed to update password.' });
+  }
 });
 
 // POST /api/auth/register-press
 // Onboarding flow for new printing press
-router.post('/register-press', (req: Request, res: Response) => {
+router.post('/register-press', async (req: Request, res: Response) => {
   try {
     const {
       business_name,
@@ -109,8 +201,8 @@ router.post('/register-press', (req: Request, res: Response) => {
       return;
     }
 
-    // Check if email already exists
-    const existingUser = db.getUserByEmail(cleanEmail);
+    // Check if email already exists (async checks memory and Firestore)
+    const existingUser = await db.getUserByEmailAsync(cleanEmail);
     if (existingUser) {
       res.status(409).json({ error: 'A user account with this email already exists. Please log in or use another email.' });
       return;
